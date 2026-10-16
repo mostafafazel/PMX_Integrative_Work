@@ -1,0 +1,24 @@
+# RStudio temporary files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Quarto temporary and generated files
+.quarto/
+_site/
+_book/
+*_files/
+
+# Local and sensitive configuration
+.Renviron
+_quarto.yml.local
+.DS_Store
+
+# Private project data
+data/private/
+data/raw/
+
+# Optional generated reports (if not sharing them)
+# *.html
+# *.pdf
