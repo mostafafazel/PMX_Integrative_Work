@@ -22,3 +22,5 @@ data/raw/
 # Optional generated reports (if not sharing them)
 # *.html
 # *.pdf
+/.quarto/
+**/*.quarto_ipynb

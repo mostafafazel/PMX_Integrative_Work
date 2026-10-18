@@ -1,5 +1,5 @@
 ---
-title: "PMX_Integrative_Work"
+title: "PMX_Integrative_Work_1"
 ---
 
 ## Quarto
@@ -8,4 +8,10 @@ Quarto enables you to weave together content and executable code into a finished
 
 ```{r}
 1 + 1
+```
+
+```{r test}
+#git hub test
+git <- "git is working"
+print(git)
 ```
