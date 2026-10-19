@@ -16,4 +16,6 @@ git <- "git is working"
 print(git)
 
 print("hello")
+a <- c("h","k")
+a
 ```
