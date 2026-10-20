@@ -1,0 +1,442 @@
+---
+title: "Integrative Group Work 1"
+subtitle: "Clinical Pharmacology and Data Analysis"
+author: "Daan Demeulenaere, Sokeng Tsake Shanice, Seyed Mostafa Fazel Hosein"
+title-block-banner: "#73394f"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-location: right
+    toc-title: "Contents"
+    toc-depth: 2
+    number-sections: false
+    code-fold: true
+    code-summary: "Show R code"
+    code-copy: true
+    embed-resources: true
+    fig-align: center
+    df-print: paged
+
+execute:
+  echo: true
+  warning: true
+  message: false
+  error: false
+
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# Keep the original dataset unchanged.
+# Update this path to the location of your study dataset.
+data_file <- "data_ug.csv"
+```
+
+```{r Packages}
+#| label: setup packages
+#| include: false
+
+#install packages needed in the report
+if (!require("pacman")) {
+  install.packages("pacman")
+  library(pacman)
+}
+
+pacman::p_load(ggpubr,
+               kableExtra,
+               DiagrammeR,
+               ggplot,
+               dplyr,
+               read.xlsx)
+```
+
+```{=html}
+<style>
+:root {
+  --accent: #73394f;
+  --accent-dark: #512738;
+  --accent-light: #f8eff3;
+  --ink: #253041;
+  --muted: #607080;
+  --border: #e5e8ec;
+}
+
+body { color: var(--ink); }
+
+.quarto-title-banner {
+  background: linear-gradient(120deg, #512738, #8b455c) !important;
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+}
+
+.quarto-title-banner .title, .quarto-title-banner .subtitle { 
+  color: white !important; 
+}
+
+h1:not(.title) {
+  color: var(--accent-dark);
+  border-bottom: 2px solid #eadce3;
+  padding-bottom: .45rem;
+  margin-top: 2.4rem;
+}
+
+h2 { color: var(--accent); margin-top: 1.5rem; }
+h3 { color: var(--accent-dark); }
+p, li { line-height: 1.6; }
+
+.section-card {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0 1.4rem;
+  background: white;
+}
+
+.prompt {
+  background: var(--accent-light);
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  margin: .7rem 0;
+}
+
+.placeholder { color: var(--muted); font-style: italic; }
+
+.workflow {
+  display: flex; flex-wrap: wrap; gap: .45rem; align-items: center;
+  margin: .8rem 0 1.2rem;
+}
+
+.workflow span {
+  border: 1px solid #e2d3db; background: var(--accent-light);
+  color: var(--accent-dark); border-radius: 20px; padding: .35rem .7rem;
+  font-size: .85rem; font-weight: 600;
+}
+
+/* --- TOC Logo Styling --- */
+#TOC {
+  background-image: url("C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/UCL_KUL_Logo.png");
+  background-size: 150px;
+  background-position: top left;
+  background-repeat: no-repeat;
+  padding-top: 120px !important;
+}
+</style>
+```
+
+```{=html}
+<div class="workflow">
+  <span>Literature</span> → <span>Data management</span> → <span>NCA</span> → <span>Covariates</span> → <span>Model proposal</span>
+</div>
+```
+
+# Study overview
+
+::: {.section-card}
+**Clinical Context & Drug Mechanism**<br>
+Bictegravir is an integrase strand transfer inhibitor (INSTI) used in combination antiretroviral therapy (cART) to treat HIV-1 and HIV-2. It inhibits HIV integrase, preventing viral DNA integration into the host genome and suppressing viral replication.
+
+**Study Overview: Gajeevy Phase Ia SAD Trial**<br>
+This report evaluates data from a Phase Ia single ascending dose (SAD) study for **Gajeevy**, a novel investigational drug structurally and mechanistically similar to bictegravir.
+
+**Design:** Four-arm, parallel-group study evaluating single oral doses (10 mg to 100 mg).<br>
+**Population:** 32 healthy volunteers.<br>
+**Objectives:** Assess safety and tolerability, explore the maximum tolerated dose (MTD), and perform an initial evaluation of the pharmacokinetic (PK) and pharmacodynamic (PD) properties of Gajeevy to guide dose selection for Phase II/III trials.<br>
+:::
+
+# Main objective
+::: {.section-card}
+The overarching objective of this integrative group work is to bridge clinical pharmacology, reproducible data management, and quantitative analysis. Specifically, the project is structured around three core pillars:
+
+**1. Literature Research:** Conduct a comprehensive review of the clinical pharmacology of bictegravir, its mechanism of action as an integrase strand transfer inhibitor (INSTI), and the regulatory and clinical context of Phase I Single Ascending Dose (SAD) studies.<br>
+**2. FAIR Data Management & Cleaning:** Process, wrangle, and clean the raw dataset strictly adhering to the **FAIR data principles** (Findable, Accessible, Interoperable, and Reusable). This involves maintaining raw data integrity, documenting all data transformation steps transparently, and ensuring reproducible data pipelines in R.<br>
+**3. Primary Pharmacokinetic (PK) Analysis:** Execute a primary pharmacokinetic analysis on the cleaned dataset to evaluate the pharmacokinetic profile of Gajeevy, including concentration-time profiles and key parameters derived from appropriate quantitative approaches (such as Non-Compartmental Analysis and Compartmental Analysis).
+:::
+
+# 1. Bibliographic and contextual work
+
+## 1.1 Literature review
+
+::: {.section-card}
+Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome. Combination antiretroviral therapy (cART) can suppress viral replication to undetectable levels, preserve immune function, and prevent disease progression; however, it cannot eradicate HIV from the body. 
+
+Bictegravir is marketed in a once-daily fixed-dose combination with emtricitabine and tenofovir alafenamide, both reverse transcriptase inhibitors. It exhibits potent antiviral activity against HIV-1 (EC50 <0.05–6.6 nM), with a protein-adjusted EC95 of 361 nM (0.162 µg/mL) for wild-type HIV-1, and is also active against HIV-2. A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) was associated with adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established. No upper limit has been defined due to the lack of significant dose-dependent toxicity. 
+
+Bictegravir is classified as a Biopharmaceutics Classification System (BCS) class II drug, characterised by low solubility and high permeability. Its estimated oral bioavailability exceeds 61%, with dose linearity reported between 25 and 100 mg. Peak plasma concentrations are reached within 2–4 hours, and food (moderate‑fat or high‑fat meal) increases AUC by approximately 24% compared to fasted state, without a clinically relevant effect. 
+
+Bictegravir exhibits extensive plasma protein binding (>99%), with an unbound fraction of approximately 0.25% in vitro. It is primarily metabolised by CYP3A and UGT1A1. Approximately 60.5% of a radiolabelled dose is recovered in feces and 35% in urine, predominantly as metabolites; only 1.3% is excreted unchanged in urine. Renal impairment is therefore not expected to substantially affect exposure. Bictegravir is also a substrate of P-glycoprotein (P-gp) and BCRP and has a plasma elimination half-life of approximately 17.3 hours. 
+:::
+
+## 1.2 Drug development context
+
+::: {.section-card}
+The dataset originates from a Phase 1a single ascending dose (SAD) study investigating Gajeevy, an investigational drug with structural and mechanistic similarities to bictegravir. The study was designed as a four-arm, parallel-group study with oral administration. 
+
+A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg. The primary objectives were to assess safety and tolerability and, where applicable, explore the maximum tolerated dose. Secondary objectives included characterising the pharmacokinetic and pharmacodynamic properties of Gajeevy. The findings will inform dose selection for subsequent Phase II trials in patients and guide further clinical development. Phase III trials then evaluate the drug’s safety and efficacy in larger patient populations before regulatory approval and market authorisation. 
+:::
+
+## 1.3 Main pharmacokinetic challenges
+
+::: {.section-card}
+Summarize the main pharmacokinetic challenges associated with bictegravir in **no more than five bullet points**.
+
+- *[Challenge 1]*
+- *[Challenge 2]*
+- *[Challenge 3]*
+- *[Add up to five points in total.]*
+:::
+
+## 1.4 Main pharmacodynamic challenges
+
+::: {.section-card}
+Summarize the main pharmacodynamic challenges associated with bictegravir in **no more than five bullet points**. Consider mechanism of action, antiviral efficacy, resistance, therapeutic window, and variability in response.
+
+- *[Challenge 1]*
+- *[Challenge 2]*
+- *[Challenge 3]*
+- *[Add up to five points in total.]*
+:::
+
+# 2. Data handling and management
+
+## 2.1 Data exploration
+
+### 2.1a Identify anomalies
+
+::: {.section-card}
+Data exploration and anomaly screening have been completed. The dataset was examined visually and statistically using `glimpse()`, `summary()`, and distribution plots with `ggplot2` to identify potential outliers, typos, and missing values. All identified irregularities were logged and addressed in our Interim Analysis report.
+:::
+
+### 2.1B Summarize the dataset
+
+::: {.section-card}
+Initially, the dataset was rescaled to use smaller numerical values, facilitating subsequent Non-Compartmental Analysis (NCA) and Compartmental Analysis (CA). Specifically, concentration and dose units were converted (e.g., from ng and ng/mL to $\mu$g and $\mu$g/L). Additionally, a new column was created to associate each subject's dose with every time point, streamlining downstream analysis.
+
+```{r}
+#| label: Rescaling
+#| eval: false
+
+library(readr)
+library(readxl)
+library(dplyr)
+
+# 1. Read the cleaned raw dataset
+data_wrong_dose <- read_excel("datIW1PMX006_CLEAN.xlsx")
+
+# 2. Calculate the repeated/maximum dose per subject ID
+data_ug <- data_wrong_dose %>%
+    group_by(ID) %>%
+    mutate(`DOSE_(ng)_repeated` = max(`DOSE_(ng)`)) %>%
+    ungroup()
+
+# 3. Convert concentrations from ng/mL to ug/mL
+data_ug <- data_ug %>%
+  mutate(`Conc_(ng/mL)` = `Conc_(ng/mL)` / 1000) %>%
+  rename(`Conc_(ug/mL)` = `Conc_(ng/mL)`)
+
+# 4. Convert doses from ng to ug
+data_ug <- data_ug %>%
+  mutate(`DOSE_(ng)` = `DOSE_(ng)` / 1000) %>%
+  rename(`DOSE_(ug)` = `DOSE_(ng)`)
+
+# 5. Convert repeated doses from ng to ug
+data_ug <- data_ug %>%
+  mutate(`DOSE_(ng)_repeated` = `DOSE_(ng)_repeated` / 1000) %>%
+  rename(`DOSE_(ug)_repeated` = `DOSE_(ng)_repeated`)
+
+# 6. FAIR Principle: Export the processed, analysis-ready dataset securely
+write_csv(data_ug, "data/processed/datIW1PMX006_UG.csv")
+```
+:::
+
+## 2.2 Data Management Plan (FAIR)
+
+::: {.section-card}
+Here a place for out DMP
+:::
+
+# 3. Pharmacokinetic analysis
+
+## 3.1 Non-compartmental analysis (NCA)
+
+###  3.1.1 NCA Methodology
+
+::: {.section-card}
+**Aim:** Define and document the analytical settings, integration methods, and acceptance criteria used for the non-compartmental pharmacokinetic analysis (NCA) of Gajeevy.
+
+### NCA Settings & Acceptance Criteria
+
+| Parameter / Setting | Specification | Description / Target |
+| :--- | :--- | :--- |
+| **Administration Route** | EV | Extravascular administration route |
+| **Integration Method** | Linear up / Log down | Trapezoidal rule optimization for ascending/descending phases |
+| **Adjusted $R^2$** | $\ge 0.98$ | Minimum threshold for terminal elimination regression fit |
+| **Extrapolated $\text{AUC}$** | $\le 20\%$ | Maximum allowable percentage of extrapolated area |
+| **SPAN Criterion** | $\ge 3$ | Minimum ratio of observation period to estimated half-life in terminal phase |
+
+### Methodology & Workflow
+
+A non-compartmental analysis was performed on our cleaned dataset using `PKAnalix2024R1`. The area under the curve ($\text{AUC}$) was calculated by integrating consecutive segments of the concentration–time curve using the **linear-up/log-down method**. This method more accurately reflects underlying pharmacokinetic behavior and is widely adopted in regulatory guidance and clinical reports. 
+
+* **Linear Trapezoidal Rule:** Applied to increasing or constant concentrations, as absorption phases are not straightforwardly described by a single exponent.
+* **Log-Linear Trapezoidal Rule:** Applied to decreasing positive concentrations to appropriately capture the exponential decline typical of the elimination phase.
+
+### Quality Control and Reliability Assessment
+
+The reliability of the NCA results was evaluated using three core acceptance criteria: an adjusted $R^2$ of at least $0.98$ for the terminal elimination regression, a maximum extrapolated $\text{AUC}$ fraction of $20\%$, and a SPAN criterion of at least three half-lives within the terminal phase. 
+
+* **Regression Evaluation:** The adjusted $R^2$ served as the primary statistical metric, paired with visual inspections of concentration–time plots to confirm a plausible terminal elimination phase.
+* **Lambda-z ($\lambda_z$) Estimation:** Five data points were initially selected for the estimation of $\lambda_z$, while aiming to maximize $R^2$. 
+* **Handling of Deviations:** When acceptance criteria were not met, data points were reassessed and alternative subsets were evaluated based on regression fit and pharmacokinetic plausibility. Estimates failing to meet the criteria were documented and interpreted with appropriate caution.
+
+### Individual Patient Terminal Phase Optimization Log
+
+To ensure optimal estimation of the terminal elimination rate constant ($\lambda_z$), individual concentration–time profiles were evaluated. When standard criteria required deviation from the initial five-point selection, adjustments were documented as follows:
+
+* **Patient 5:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$, marking the transition between the absorption and elimination phases.
+* **Patient 6:** Four data points were selected for the same reason, as the fifth point corresponded to $C_{\text{max}}$ and therefore did not belong to the terminal elimination phase.
+* **Patient 7:** Three data points were selected, yielding an adjusted $R^2$ of $0.976$. Although five data points could technically be included, none of the tested subsets met the acceptance criterion of $R^2 \ge 0.98$. The three-point subset provided the highest $R^2$ among the evaluated options while representing the minimum acceptable number of points.
+* **Patient 13:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$, marking the transition between the absorption and elimination phases.
+* **Patient 14:** Four data points were selected because including the fifth point resulted in an adjusted $R^2$ below the acceptance criterion of $0.98$.
+* **Patient 21:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$, marking the transition between the absorption and elimination phases.
+* **Patient 23:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$ and did not belong to the terminal elimination phase. The resulting adjusted $R^2$ was $0.973$, remaining slightly below the acceptance criterion of $0.98$.
+* **Patient 31:** Four data points were selected because including the fifth point resulted in an adjusted $R^2$ below the acceptance criterion of $0.98$.
+
+:::
+
+###  3.1.2 Individual Concentration–Time Profiles and Terminal Fits
+
+:::{.section-card}
+The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-nca-individual-fits-1 through @fig-nca-individual-fits-8.
+:::
+
+::: {#fig-nca-individual-fits-1}
+![](Plots/indfits_nca_0_0.png)
+
+Terminal elimination phase regression fits for Subjects 1 to 4.
+:::
+
+::: {#fig-nca-individual-fits-2}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_1.png)
+
+Terminal elimination phase regression fits for Subjects 5 to 8.
+:::
+
+::: {#fig-nca-individual-fits-3}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_2.png)
+
+Terminal elimination phase regression fits for Subjects 9 to 12.
+:::
+
+::: {#fig-nca-individual-fits-4}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_3.png)
+
+Terminal elimination phase regression fits for Subjects 13 to 16.
+:::
+
+::: {#fig-nca-individual-fits-5}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_4.png)
+
+Terminal elimination phase regression fits for Subjects 17 to 20.
+:::
+
+::: {#fig-nca-individual-fits-6}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_5.png)
+
+Terminal elimination phase regression fits for Subjects 21 to 24.
+:::
+
+::: {#fig-nca-individual-fits-7}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_6.png)
+
+Terminal elimination phase regression fits for Subjects 25 to 28.
+:::
+
+::: {#fig-nca-individual-fits-8}
+![](C:/Users/daand/OneDrive - UCL/Documenten/UCL/Integrative work 1/git iw1/PMX_Integrative_Work/Plots/indfits_nca_0_7.png)
+
+Terminal elimination phase regression fits for Subjects 29 to 32.
+:::
+
+## 3.2 Derive and summarize PK parameters
+
+::: {.section-card}
+Calculate and interpret the primary and secondary pharmacokinetic parameters required for your analysis.
+
+```{r}
+#| label: pk-parameter-summary
+#| eval: false
+
+# Add code to calculate and summarize the required PK parameters.
+# Report central tendency and variability for each relevant parameter.
+```
+
+**Results table**
+
+| Parameter | Unit | Summary measure | Variability measure | Interpretation |
+|:--|:--|:--|:--|:--|
+| *[Parameter]* | *[Unit]* | *[Mean/median]* | *[SD/IQR/CI]* | *[Interpretation]* |
+
+*[Add further rows or present an appropriate figure. State sample sizes and explain relevant findings and limitations.]*
+:::
+
+## 3.3 Covariate pilot analysis
+
+::: {.section-card}
+Explore whether recorded covariates (e.g., age, weight, sex, or genotype) may be associated with PK parameters. Use simple visual and statistical methods appropriate to the data.
+
+```{r}
+#| label: covariate-analysis
+#| eval: false
+
+# Add exploratory plots and/or statistical tests here.
+# Adapt the code to your actual variable names and sample size.
+```
+
+**Findings**
+
+*[Describe the relationships observed, the methods used, sample sizes, estimates or p-values where appropriate, and key limitations. Treat these as exploratory associations, not proof of causality.]*
+:::
+
+## 3.4 Compartmental modelling
+
+::: {.section-card}
+Propose a suitable compartmental model based on the concentration–time patterns and preliminary analysis.
+
+**Proposed model:** *[e.g., one- or two-compartment structure; justify your choice based on the data.]*
+
+**Model sketch**
+
+*[Insert a simple block diagram showing compartments, drug input, and elimination.]*
+
+**Rationale and assumptions**
+
+*[Explain the observed patterns supporting the proposal, key assumptions, and important limitations.]*
+:::
+
+# Conclusions
+
+::: {.section-card}
+**Main findings**
+
+- *[Finding 1]*
+- *[Finding 2]*
+- *[Finding 3]*
+
+**Limitations and next steps**
+
+*[Briefly state the main limitations and what you would investigate next.]*
+:::
+
+## Software environment
+
+Record the software and package versions used to produce the report.
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
