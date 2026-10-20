@@ -27,8 +27,8 @@ execute:
   message: false
   error: false
   cache: false
-
 ---
+
 ```{r}
 #| label: setup
 #| include: false
@@ -104,20 +104,8 @@ p, li { line-height: 1.6; }
 
 # Study overview
 
-::: {.section-card}
-**Clinical Context & Drug Mechanism**
-Bictegravir is an integrase strand transfer inhibitor (INSTI) used in combination antiretroviral therapy (cART) to treat HIV-1 and HIV-2. It inhibits HIV integrase, preventing viral DNA integration into the host genome and suppressing viral replication.
+::: section-card
+**Clinical Context & Drug Mechanism** Bictegravir is an integrase strand transfer inhibitor (INSTI) used in combination antiretroviral therapy (cART) to treat HIV-1 and HIV-2. It inhibits HIV integrase, preventing viral DNA integration into the host genome and suppressing viral replication.
 
-**Study Overview: Gajeevy Phase Ia SAD Trial**
-This report evaluates data from a Phase Ia single ascending dose (SAD) study for **Gajeevy**, a novel investigational drug structurally and mechanistically similar to bictegravir.
-* **Design:** Four-arm, parallel-group study evaluating single oral doses (10 mg to 100 mg).
-* **Population:** 32 healthy volunteers.
-* **Objectives:** Assess safety and tolerability, explore the maximum tolerated dose (MTD), and perform an initial evaluation of the pharmacokinetic (PK) and pharmacodynamic (PD) properties of Gajeevy to guide dose selection for Phase II/III trials.
-
+**Study Overview: Gajeevy Phase Ia SAD Trial** This report evaluates data from a Phase Ia single ascending dose (SAD) study for **Gajeevy**, a novel investigational drug structurally and mechanistically similar to bictegravir. \* **Design:** Four-arm, parallel-group study evaluating single oral doses (10 mg to 100 mg). \* **Population:** 32 healthy volunteers. \* **Objectives:** Assess safety and tolerability, explore the maximum tolerated dose (MTD), and perform an initial evaluation of the pharmacokinetic (PK) and pharmacodynamic (PD) properties of Gajeevy to guide dose selection for Phase II/III trials.
 :::
-
-
-
-
-
-
