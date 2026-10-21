@@ -1,7 +1,7 @@
 ---
 title: "Integrative Group Work 1"
 subtitle: "Clinical Pharmacology and Data Analysis"
-author: "Daan Demeulenaere, Sokeng Tsake Shanice, Seyed Mostafa Fazel Hosein"
+author: "Daan Demeulenaere, \n Sokeng Tsake Shanice, \n Seyed Mostafa Fazel Hosein"
 title-block-banner: "#73394f"
 
 format:
@@ -197,13 +197,271 @@ Summarize the main pharmacodynamic challenges associated with bictegravir in **n
 
 # 2. Data handling and management
 
-## 2.1 Data exploration
-
-### 2.1a Identify anomalies
-
 ::: section-card
 Data exploration and anomaly screening have been completed. The dataset was examined visually and statistically using `glimpse()`, `summary()`, and distribution plots with `ggplot2` to identify potential outliers, typos, and missing values. All identified irregularities were logged and addressed in our Interim Analysis report.
 :::
+
+
+## 2.1 Data exploration
+
+The dataset was explored to assess its structure, completeness, distributions, and potential anomalies before further analysis.
+
+### 2.1.1 Data import and overview
+
+```{r setup-data}
+#| include: false
+
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(skimr)
+library(visdat)
+library(naniar)
+library(GGally)
+library(knitr)
+
+pa_data <- read_excel("Data/datIW1PMX006_CLEAN.xlsx")
+```
+
+```{r dataset-overview}
+#| echo: false
+
+pa_data |>
+  summarise(
+    Patients = n_distinct(ID),
+    Measured_concentrations = sum(!is.na(`Conc_(ng/mL)`)),
+    Analysis_variables = ncol(pa_data) - 2,
+    Rows= n(),
+    Columns = ncol(pa_data)
+  ) |>
+  knitr::kable(caption = "Dataset overview")
+```
+
+
+::: {.panel-tabset}
+
+
+```{r skim-summary}
+#| echo: false
+
+skim_result <- skimr::skim(pa_data)
+#summary(pa_data)
+```
+
+## Numerical variables
+
+```{r skim-numeric}
+#| echo: false
+
+skimr::yank(skim_result, "numeric")
+```
+
+## Categorical variables
+
+```{r categorical-summary}
+#| echo: false
+
+pa_data |>
+  distinct(ID, .keep_all = TRUE) |>
+  select(SEX, ABCG2, UGT1A1, CYP3A5, ABCB1) |>
+  mutate(across(everything(), as.character)) |>
+  pivot_longer(everything(),
+               names_to = "Variable",
+               values_to = "Category") |>
+  count(Variable, Category) |>
+  knitr::kable(caption = "Patient-level categorical variables")
+```
+
+## Data structure
+
+```{r data-structure}
+#| echo: false
+
+glimpse(pa_data)
+```
+
+:::
+
+### 2.1.2 Dose variable preparation
+
+The dose column records administration events. Zero values at subsequent sampling times indicate that no additional dose was administered. These values were recoded as NA for event-based analysis.
+
+A separate patient-level dose variable was created to retain the administered dose across all observations.
+
+```{r dose-handling}
+
+pa_data <- pa_data |>
+  arrange(ID, `TIME_(h)`) |>
+  group_by(ID) |>
+  mutate(
+    DOSE_patient = first(`DOSE_(ng)`),
+    `DOSE_(ng)` = na_if(`DOSE_(ng)`, 0),
+    DOSE_mg = DOSE_patient / 1e6
+  ) |>
+  ungroup()
+
+# One observation per patient for baseline analyses
+patient_data <- pa_data |>
+  distinct(ID, .keep_all = TRUE)
+```
+
+
+### 2.1.3 Data completeness and missing values
+
+Missing values were examined before recoding the dose column to distinguish unrecorded measurements from sampling times without dosing events.
+
+
+
+```{r missing-visualization}
+#| echo: false
+#| fig-height: 5
+#| fig-width: 9
+
+naniar::vis_miss(pa_data)
+```
+
+The missing concentration records occur at time zero, and the missing Dose recorded related to observation time. These values were retained as NA because no baseline concentration measurements were recorded and no additional doses at observation time.
+
+### 2.1.4 Data integrity checks
+
+Patient records were assessed for duplicate sampling times, unexpected numbers of records or dosing events, and inconsistent baseline covariates.
+
+```{r integrity-check}
+
+patient_checks <- pa_data |>
+  group_by(ID) |>
+  summarise(
+    Records = n(),
+    Unique_times = n_distinct(`TIME_(h)`),
+    Dosing_events = sum(`DOSE_(ng)` > 0, na.rm = TRUE),
+    Covariates_consistent = all(c(
+      n_distinct(`BW_(kg)`),
+      n_distinct(AGE),
+      n_distinct(`ALB_(g/L)`),
+      n_distinct(`CRP_(mg/L)`),
+      n_distinct(`CREAT_(mg/dL)`),
+      n_distinct(SEX),
+      n_distinct(ABCG2),
+      n_distinct(UGT1A1),
+      n_distinct(CYP3A5),
+      n_distinct(ABCB1)
+    ) == 1),
+    .groups = "drop"
+  )
+
+flagged_records <- patient_checks |>
+  filter(
+    Records != 10 |
+    Unique_times != Records |
+    Dosing_events != 1 |
+    !Covariates_consistent
+  )
+
+if (nrow(flagged_records) == 0) {
+  cat("No patient-level integrity issues were flagged.")
+} else {
+  knitr::kable(flagged_records)
+}
+```
+
+### 2.1.5 Univariate outlier screening
+
+The distributions of continuous baseline covariates were examined using one observation per patient to avoid counting repeated measurements multiple times.
+
+```{r missing-summary}
+# Baseline variables: one observation per patient
+baseline_vars <- c(
+  "BW_(kg)", "AGE", "ALB_(g/L)",
+  "CRP_(mg/L)", "CREAT_(mg/dL)"
+)
+
+baseline_long <- patient_data |>
+  select(all_of(baseline_vars)) |>
+  pivot_longer(
+    everything(),
+    names_to = "Variable",
+    values_to = "Value"
+  )
+
+# Concentrations: all available observations
+conc_long <- pa_data |>
+  transmute(
+    Variable = "Conc_(ng/mL)",
+    Value = `Conc_(ng/mL)`
+  ) |>
+  filter(!is.na(Value))
+
+# Combine and plot
+bind_rows(baseline_long, conc_long) |>
+  ggplot(aes(x = Value)) +
+  geom_histogram(
+    bins = 12,
+    fill = "steelblue",
+    color = "white"
+  ) +
+  facet_wrap(~Variable, scales = "free", ncol = 3) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of numerical variables",
+    x = NULL,
+    y = "Frequency"
+  )
+```
+
+
+### 2.1.6 Concentration-time profiles
+
+> Some high concentration value were observed in data and because concentration depends on administered dose and sampling time, therefore individual concentration-time profiles stratified by dose group.
+
+```{r concentration-time}
+#| echo: false
+#| fig-height: 6
+#| fig-width: 10
+
+pa_data |>
+  filter(!is.na(`Conc_(ng/mL)`)) |>
+  ggplot(aes(
+    x = `TIME_(h)`,
+    y = `Conc_(ng/mL)`,
+    group = ID
+  )) +
+  geom_line(alpha = 0.5) +
+  geom_point(size = 0.8, alpha = 0.7) +
+  facet_wrap(
+    ~DOSE_mg,
+    labeller = labeller(
+      DOSE_mg = function(x) paste(x, "mg")
+    )
+  ) +
+  scale_y_log10() +
+  theme_minimal() +
+  labs(
+    title = "Individual concentration-time profiles by dose",
+    x = "Time (h)",
+    y = "Concentration (ng/mL, log scale)"
+  )
+```
+
+
+### 2.1.7 Multivariate outlier screening
+
+Potential multivariate outliers were investigated using pairwise scatter plots of patient-level covariates.
+
+```{r pairwise-outliers}
+#| echo: false
+#| fig-height: 7
+#| fig-width: 7
+
+patient_data |>
+  select(
+    AGE,
+    `BW_(kg)`,
+    `CREAT_(mg/dL)`,
+    `ALB_(g/L)`
+  ) |>
+  GGally::ggpairs()
+```
 
 ### 2.1B Summarize the dataset
 
