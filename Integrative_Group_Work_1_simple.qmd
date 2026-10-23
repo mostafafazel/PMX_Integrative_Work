@@ -688,13 +688,10 @@ knitr::kable(
 )
 ```
 
-## 3.3 Covariate pilot analysis
-
-Explore whether recorded covariates (e.g., age, weight, sex, or genotype) may be associated with PK parameters. Use simple visual and statistical methods appropriate to the data.
-
 :::
 
-## 3.3 Covariate pilot analysis
+
+## 3.3 Covariate analysis
 
 ::: section-card
 
@@ -870,7 +867,7 @@ show_cor <- function(parameter) {
 }
 ```
 
-#### Correlation results
+### 3.3.1 Correlation results
 
 The following tables present Spearman's correlation coefficients (ρ) and corresponding p-values for each pharmacokinetic parameter and continuous covariate.
 
@@ -933,7 +930,7 @@ Spearman's rho (ρ) describes the strength and direction of the association betw
 The results should be interpreted cautiously because the analysis is exploratory and includes patients receiving different dose levels.
 :::
 
-#### PK parameter–covariate relationships
+### 3.3.2 PK parameter–covariate relationships
 
 Scatterplots were used to visualize the relationships between individual PK parameters and continuous patient covariates. Patients were colored according to their administered dose. Spearman's correlation coefficient (ρ) and the corresponding p-value are displayed for each relationship.
 
@@ -1078,7 +1075,7 @@ plot_pk_cov("Vd/F (mL)")
 :::
 
 
-#### Relationships between PK parameters and categorical covariates
+### 3.3.3 Relationships between PK parameters and categorical covariates
 
 The relationships between pharmacokinetic parameters and categorical patient covariates, including sex and genetic polymorphisms, were explored using boxplots. Individual observations were overlaid and colored according to the administered dose to visualize variability between groups.
 
