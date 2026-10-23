@@ -207,10 +207,13 @@ Summarize the main pharmacodynamic challenges associated with bictegravir in **n
 Data exploration and anomaly screening have been completed. The dataset was examined visually and statistically using `glimpse()`, `summary()`, and distribution plots with `ggplot2` to identify potential outliers, typos, and missing values. All identified irregularities were logged and addressed in our Interim Analysis report.
 
 
-## 2.1 Data exploration
-The dataset was explored to assess its structure, completeness, distributions, and potential anomalies before further analysis.
 
-### 2.1.1 Data import and overview
+## 2.1 Dataset Overview and Structure
+
+The dataset was initially explored to understand its structure, identify the available variables, and assess the number of patients and pharmacokinetic observations.
+
+### 2.1.1 Dataset Overview
+
 ```{r dataset-overview}
 #| echo: false
 
@@ -223,15 +226,29 @@ pa_data |>
     Columns = ncol(pa_data)
   ) |>
   knitr::kable(caption = "Dataset overview")
+
+# One observation per patient for baseline analyses
+patient_data <- pa_data |>
+  distinct(ID, .keep_all = TRUE)
+
+# Baseline variables: one observation per patient
+baseline_vars <- c(
+  "BW_(kg)", "AGE", "ALB_(g/L)",
+  "CRP_(mg/L)", "CREAT_(mg/dL)"
+)
 ```
 
-::: {.panel-tabset}
+### 2.1.2 Variable Summaries and Data Structure
+
+Numerical and categorical variables were examined to summarize their distributions and identify potential inconsistencies. Categorical variables were summarized at the patient level to avoid counting repeated measurements from the same subject.
 
 ```{r skim-summary}
 #| echo: false
 
 skim_result <- skimr::skim(pa_data)
 ```
+
+::: {.panel-tabset}
 
 ## Numerical variables
 
@@ -266,7 +283,58 @@ glimpse(pa_data)
 ```
 
 :::
-### 2.1.2 Dose variable preparation
+
+## 2.1.3 Variable Distribution
+
+```{r baseline-violin-plots}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+patient_data |>
+  mutate(SEX = factor(SEX)) |>
+  select(SEX, all_of(baseline_vars)) |>
+  pivot_longer(
+    cols = all_of(baseline_vars),
+    names_to = "Variable",
+    values_to = "Value"
+  ) |>
+  ggplot(aes(x = SEX, y = Value, fill = SEX)) +
+  geom_violin(
+    trim = FALSE,
+    alpha = 0.5
+  ) +
+  geom_boxplot(
+    width = 0.15,
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    width = 0.1,
+    size = 0.5
+  ) +
+  scale_fill_brewer(palette = "Set1") +
+  facet_wrap(
+    ~Variable,
+    scales = "free_y",
+    ncol = 3
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold")
+  ) +
+  labs(
+    title = "Distribution of baseline covariates by sex",
+    x = "Sex",
+    y = "Value"
+  )
+```
+
+## 2.2 Data Preparation and Quality Assessment
+
+Before performing pharmacokinetic analysis, dose variables, missing values, and data consistency were assessed to ensure that the dataset was suitable for subsequent analyses.
+
+### 2.2.1 Dose Variable Preparation
 
 The dose column records administration events. Zero values at subsequent sampling times indicate that no additional dose was administered. These values were recoded as NA for event-based analysis.
 
@@ -283,14 +351,14 @@ pa_data <- pa_data |>
   ) |>
   ungroup()
 
-# One observation per patient for baseline analyses
-patient_data <- pa_data |>
-  distinct(ID, .keep_all = TRUE)
+
 ```
 
-### 2.1.3 Data completeness and missing values
+### 2.2.2 Missing Data Assessment
 
-Missing values were examined before recoding the dose column to distinguish unrecorded measurements from sampling times without dosing events.
+Missing values were visually assessed to identify their distribution across variables and observations.
+
+Missing concentration values at time zero were distinguished from the dose values recoded as NA at sampling times without additional dosing events. These two types of missing entries have different interpretations and were not treated as equivalent data-quality problems.
 
 ```{r missing-visualization}
 #| echo: false
@@ -300,9 +368,9 @@ Missing values were examined before recoding the dose column to distinguish unre
 naniar::vis_miss(pa_data)
 ```
 
-The missing concentration records occur at time zero, and the missing Dose recorded related to observation time. These values were retained as NA because no baseline concentration measurements were recorded and no additional doses at observation time.
+The missing concentration records occur at time zero, where no baseline concentration measurements were recorded. The NA values in the dose column at subsequent sampling times represent the absence of additional dosing events rather than unknown administered doses.
 
-### 2.1.4 Data integrity checks
+### 2.2.3 Data Integrity and Consistency Checks
 
 Patient records were assessed for duplicate sampling times, unexpected numbers of records or dosing events, and inconsistent baseline covariates.
 
@@ -343,10 +411,16 @@ if (nrow(flagged_records) == 0) {
   knitr::kable(flagged_records)
 }
 ```
- 
-### 2.1.5 Univariate outlier screening
+
+## 2.3 Exploratory Data Analysis and Outlier Screening
+
+Exploratory analyses were performed to examine numerical distributions, identify potentially unusual observations, and investigate relationships among patient characteristics.
+
+### 2.3.1 Univariate Distribution Assessment
 
 The distributions of continuous baseline covariates were examined using one observation per patient to avoid counting repeated measurements multiple times.
+
+Concentration distributions were evaluated using all available concentration measurements to identify potential extreme values.
 
 ```{r missing-summary}
 # Baseline variables: one observation per patient
@@ -388,10 +462,9 @@ bind_rows(baseline_long, conc_long) |>
   )
 ```
 
+### 2.3.2 Concentration–Time Profile Assessment
 
-### 2.1.6 Concentration-time profiles
-
-Some high concentration value were observed in data and because concentration depends on administered dose and sampling time, therefore individual concentration-time profiles stratified by dose group.
+Some high concentration values were observed during the initial exploration. Since drug concentrations depend on administered dose and sampling time, individual concentration–time profiles were examined separately by dose group to assess their pharmacokinetic plausibility.
 
 ```{r concentration-time}
 #| echo: false
@@ -422,10 +495,9 @@ pa_data |>
   )
 ```
 
+### 2.3.3 Multivariate Outlier Screening
 
-### 2.1.7 Multivariate outlier screening
-
-Potential multivariate outliers were investigated using pairwise scatter plots of patient-level covariates.
+Potential multivariate outliers were investigated using pairwise scatter plots of patient-level covariates. This approach was used to identify unusual combinations of baseline characteristics that might not be apparent in individual variable distributions.
 
 ```{r pairwise-outliers}
 #| echo: false
@@ -442,21 +514,25 @@ patient_data |>
   GGally::ggpairs()
 ```
 
-### 2.1B Summarize the dataset
+## 2.4 Preparation of the Analysis-Ready Dataset
 
+### 2.4.1 Unit Conversion and Data Export
 
-Initially, the dataset was rescaled to use smaller numerical values, facilitating subsequent Non-Compartmental Analysis (NCA) and Compartmental Analysis (CA). Specifically, concentration and dose units were converted (e.g., from ng and ng/mL to $\mu$g and $\mu$g/L). Additionally, a new column was created to associate each subject's dose with every time point, streamlining downstream analysis.
+Following data exploration and quality assessment, the dataset was prepared for subsequent Non-Compartmental Analysis (NCA) and Compartmental Analysis (CA).
+
+To facilitate pharmacokinetic calculations and improve numerical readability, concentration values were converted from ng/mL to µg/mL, and dose values from ng to µg. A repeated-dose variable was also created to associate each subject's administered dose with all corresponding sampling times.
+
+The resulting dataset was intended for use in downstream pharmacokinetic analyses.
 
 ```{r}
-#| label: Rescaling
-#| eval: false
+#| echo: false
 
 library(readr)
 library(readxl)
 library(dplyr)
 
 # 1. Read the cleaned raw dataset
-data_wrong_dose <- read_excel("datIW1PMX006_CLEAN.xlsx")
+data_wrong_dose <- read_excel("Data/datIW1PMX006_CLEAN.xlsx")
 
 # 2. Calculate the repeated/maximum dose per subject ID
 data_ug <- data_wrong_dose %>%
@@ -480,7 +556,7 @@ data_ug <- data_ug %>%
   rename(`DOSE_(ug)_repeated` = `DOSE_(ng)_repeated`)
 
 # 6. FAIR Principle: Export the processed, analysis-ready dataset securely
-write_csv(data_ug, "data/processed/datIW1PMX006_UG.csv")
+#write_csv(data_ug, "Data/datIW1PMX006_UG.csv")
 ```
 
 ## 2.2 Data Management Plan (FAIR)
