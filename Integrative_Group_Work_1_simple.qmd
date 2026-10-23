@@ -21,7 +21,7 @@ format:
 
 execute:
   echo: true
-  warning: true
+  warning: false
   message: false
   error: false
 ---
@@ -32,10 +32,10 @@ execute:
 
 # Keep the original dataset unchanged.
 # Update this path to the location of your study dataset.
-data_file <- "data_ug.csv"
+data_file <- read.csv("Data/data_ug.csv")
 ```
 
-```{r Packages}
+```{ Packages}
 #| label: setup packages
 #| include: false
 
@@ -563,7 +563,6 @@ To ensure optimal estimation of the terminal elimination rate constant ($\lambda
 
 ::: section-card
 The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-nca-individual-fits-1 through @fig-nca-individual-fits-8.
-:::
 
 ::: {#fig-nca-individual-fits-1}
 ![](Plots/indfits_nca_0_0.png)
@@ -612,6 +611,7 @@ Terminal elimination phase regression fits for Subjects 25 to 28.
 
 Terminal elimination phase regression fits for Subjects 29 to 32.
 :::
+:::
 
 ## 3.2 Derive and summarize PK parameters
 
@@ -655,32 +655,197 @@ Explore whether recorded covariates (e.g., age, weight, sex, or genotype) may be
 
 ## 3.4 Compartmental modelling
 
+### 3.4.1 CA Methodology
+
 ::: section-card
-Propose a suitable compartmental model based on the concentration–time patterns and preliminary analysis.
+**Aim**: Develop a preliminary compartmental model to describe the pharmacokinetics of Gajeevy following single-dose oral administration and compare alternative model structures.
 
-**Proposed model:** *\[e.g., one- or two-compartment structure; justify your choice based on the data.\]*
+A compartmental analysis (CA) was performed on our clean dataset in PKAnalix2024R1.
 
-**Model sketch**
+NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration-time profiles of Gajeevy (@fig-Gajeevy-concentration-time-profiles), together with the NCA-derived parameters, were subsequently used to guide the selection of a preliminary compartmental model.
 
-*\[Insert a simple block diagram showing compartments, drug input, and elimination.\]*
+Model selection was based on the goodness of fit and information criteria, taking into account the trade-off between model complexity and descriptive performance.
 
-**Rationale and assumptions**
+```{r}
+#| label: fig-Gajeevy-concentration-time-profiles
+#| eval: true
+#| fig-cap: "Concentration-time profiles following the oral administration of Gajeevy on both linear and log scale."
 
-*\[Explain the observed patterns supporting the proposal, key assumptions, and important limitations.\]*
+#load necessary packages
+library(ggplot2)
+library(patchwork)
+
+#load data
+data_CA <- data_file
+# Plot 1: Linear scale
+p1 <- ggplot(data_CA, aes(
+  x = TIME_.h.,
+  y = Conc_.ug.mL.,
+  group = ID
+)) +
+  geom_line(
+    color = "#0072B2",
+    alpha = 0.45,
+    linewidth = 0.5
+  ) +
+  stat_summary(
+    aes(group = 1),
+    fun = mean,
+    geom = "line",
+    color = "black",
+    linewidth = 1.2
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 50, by = 10),
+    limits = c(0, 50),
+    expand = expansion(mult = c(0, 0))
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 10, by = 2.5),
+    limits = c(0, 10),
+    expand = expansion(mult = c(0, 0))
+  ) +
+  labs(
+    title = "Linear scale",
+    x = "Time (h)",
+    y = expression(Concentration~(mu*g/mL))
+  ) +
+  theme_bw(base_size = 12) +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5),
+    axis.title = element_text(size = 12),
+    panel.grid.minor = element_line(color = "#EEEEEE"),
+    panel.grid.major = element_line(color = "#D9D9D9")
+  )
+
+# Plot 2: Logarithmic scale
+p2 <- ggplot(data_CA, aes(
+  x = TIME_.h.,
+  y = Conc_.ug.mL.,
+  group = ID
+)) +
+  geom_line(
+    color = "#0072B2",
+    alpha = 0.45,
+    linewidth = 0.5
+  ) +
+  stat_summary(
+    aes(group = 1),
+    fun = mean,
+    geom = "line",
+    color = "black",
+    linewidth = 1.2
+  ) +
+  scale_x_continuous(
+    breaks = seq(0, 50, by = 10),
+    limits = c(0, 50),
+    expand = expansion(mult = c(0, 0))
+  ) +
+  scale_y_log10(
+    breaks = c(0.1, 1, 10),
+    limits = c(0.05, 15),
+    expand = expansion(mult = c(0, 0))
+  ) +
+  labs(
+    title = "Log scale",
+    x = "Time (h)",
+    y = expression(Concentration~(mu*g/mL))
+  ) +
+  theme_bw(base_size = 12) +
+  theme(
+    plot.title = element_text(size = 14, hjust = 0.5),
+    axis.title = element_text(size = 12),
+    panel.grid.minor = element_line(color = "#EEEEEE"),
+    panel.grid.major = element_line(color = "#D9D9D9")
+  )
+
+# Combine both plots
+combined_plot <- (p1 | p2)
+combined_plot
+```
 :::
 
-# Conclusions
+### 3.4.1 Compartment selection and evaluation
 
 ::: section-card
-**Main findings**
+### Initial model selection
 
-- *\[Finding 1\]*
-- *\[Finding 2\]*
-- *\[Finding 3\]*
+NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration–time profiles (@fig-Gajeevy-concentration-time-profiles), together with the NCA-derived parameters, were subsequently used to guide the selection of a preliminary compartmental model. The concentration–time profile supports the selection of an oral one-compartment model with first-order absorption and elimination. A characteristic oral absorption pattern is observed, with concentrations increasing exponentially from the first sampling point at 0.5 hours to a peak concentration at approximately 2 hours, followed by a gradual decline. This resembles a linear absorption process from the gastrointestinal tract into the systemic circulation, as no clear plateau is observed before (T_{\max}), and (C_{\max}). Subsequently AUC appears to increase approximately proportionally with dose, as shown in Figure 1.2. and table of NCA. These observations suggest dose-proportional pharmacokinetics and support the use of a one-compartment model with first-order absorption. As no data were available before the first sampling point, no absorption lag time was included, keeping the model as simple as possible without introducing an additional parameter unsupported by the available data. The post-peak decline appears approximately linear on the semi-logarithmic scale from 2 to 48 hours, which is consistent with first-order elimination. Finally, the absence of an obvious inflection point indicating a distinct distribution phase supports the use of a one-compartment model as a reasonable starting point. 
 
-**Limitations and next steps**
+### Comparing a two-compartment system
 
-*\[Briefly state the main limitations and what you would investigate next.\]*
+However, when we look at the concentration-time curves per dose (@fig-Gajeevy-concentration-time-profiles-per_dose), we see a slight bend (inflection point) between 4 and 8 hours after dosing in all dose groups. This could indicate a two-compartment system, in which the drug distributes into a second compartment. When we fit this model to our data, the two-compartment model yields a lower -2LL (-532.8 versus -442.7), and thus a better raw fit to the data (@tbl-ca-model-comparison). This is consistent with the fact that models with more parameters can always follow the data at least as closely, so -2LL rewards additional parameters, even when these mainly capture noise. Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC), however, also correct for model complexity by penalizing each additional parameter (AIC = -2LL + 2 × number of parameters; BIC = -2LL + ln(n) × number of parameters), so that a model only wins if it improves the fit by more than the penalty costs. Because each individual was fitted separately, the two-compartment model has 64 more parameters than the one-compartment model (161 versus 97), and this additional complexity is not justified by the gain in fit: both the AIC (-248.7 versus -210.8) and the BIC (-226.1 versus -175.6) are lower for the one-compartment model (@tbl-ca-model-comparison). The slight bend observed between 4 and 8 hours may reflect variability or noise in the data rather than a true distribution phase. The two-compartment model, being more flexible, can follow this deviation, but the data do not support a distinct second compartment.
+
+```{r}
+#| label: fig-Gajeevy-concentration-time-profiles-per_dose
+#| eval: true
+#| fig-cap: "Concentration-time profiles separated on dose following the oral administration of Gajeevy on log scale."
+
+dose_plot <- ggplot(data_CA, aes(x = TIME_.h., y = Conc_.ug.mL., group = ID, color = factor(DOSE_.ug._repeated))) +
+  geom_line(
+    aes(group = ID),
+    alpha = 0.40,
+    linewidth = 0.5
+  ) +
+  stat_summary(
+    aes(group = factor(DOSE_.ug._repeated)),
+    fun = mean,
+    geom = "line",
+    color = "black",
+    linewidth = 1.2
+  ) +
+  scale_y_log10() +
+  scale_color_brewer(palette = "Set1", name = "Dose (µg)") +
+  theme_light() +
+  labs(
+    title = "Concentration-time profiles by dose on log scale",
+    x = "Time (h)",
+    y = "Concentration (µg/L, log scale)"
+  )
+dose_plot
+```
+
+```{r}
+#| label: tbl-ca-model-comparison
+#| eval: true
+#| tbl-cap: "Comparison of one- and two-compartment models fitted in PKAnalix 2024R1."
+
+model_comparison <- data.frame(
+  Criterion = c(
+    "Total cost",
+    "-2 Log-likelihood (-2LL)",
+    "Akaike Information Criterion (AIC)",
+    "Bayesian Information Criterion (BIC)",
+    "Number of estimated parameters"
+  ),
+  `One-compartment model` = c(
+    1.16, -442.72, -248.72, -226.13, 97
+  ),
+  `Two-compartment model` = c(
+    0.85, -532.77, -210.77, -175.55, 161
+  ),
+  check.names = FALSE
+)
+
+knitr::kable(
+  model_comparison,
+  digits = 2)
+```
+
+The preliminary one-compartment model is therefore the simpler and more reliable choice, and it describes the data adequately. This was further supported by the observed-versus-predicted plot (@fig-observed-versus-predicted-plot), which showed no clear curvature or trend indicating systematic over- or underestimation of concentrations. A sketch of the model structure is shown in @fig-sketch-model.
+
+::: {#fig-observed-versus-predicted-plot}
+![](Plots/obspred_ca_0_Conc_ug_mL__0.png)
+
+Observed versus individual predictions of concentration (µg/mL).
+:::
+
+::: {#fig-sketch-model}
+![](Plots/sketch)
+
+Schematic representation of the one-compartment oral pharmacokinetic model with first-order absorption and elimination.
+:::
+
 :::
 
 ## Software environment
