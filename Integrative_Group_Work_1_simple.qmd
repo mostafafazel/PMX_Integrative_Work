@@ -559,10 +559,20 @@ To ensure optimal estimation of the terminal elimination rate constant ($\lambda
 - **Patient 31:** Four data points were selected because including the fifth point resulted in an adjusted $R^2$ below the acceptance criterion of $0.98$.
 :::
 
+
 ### 3.1.2 Individual Concentration–Time Profiles and Terminal Fits
 
 ::: section-card
+<<<<<<< Updated upstream
 The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-nca-individual-fits-1 through @fig-nca-individual-fits-8.
+=======
+The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKanalix 2024R1 are presented below. Each tab displays the terminal phase regression fits for four subjects.
+:::
+>>>>>>> Stashed changes
+
+::: {.panel-tabset}
+
+## Subjects 1–4
 
 ::: {#fig-nca-individual-fits-1}
 ![](Plots/indfits_nca_0_0.png)
@@ -570,11 +580,15 @@ The individual concentration–time profiles and estimated terminal elimination 
 Terminal elimination phase regression fits for Subjects 1 to 4.
 :::
 
+## Subjects 5–8
+
 ::: {#fig-nca-individual-fits-2}
 ![](Plots/indfits_nca_0_1.png)
 
 Terminal elimination phase regression fits for Subjects 5 to 8.
 :::
+
+## Subjects 9–12
 
 ::: {#fig-nca-individual-fits-3}
 ![](Plots/indfits_nca_0_2.png)
@@ -582,11 +596,15 @@ Terminal elimination phase regression fits for Subjects 5 to 8.
 Terminal elimination phase regression fits for Subjects 9 to 12.
 :::
 
+## Subjects 13–16
+
 ::: {#fig-nca-individual-fits-4}
 ![](Plots/indfits_nca_0_3.png)
 
 Terminal elimination phase regression fits for Subjects 13 to 16.
 :::
+
+## Subjects 17–20
 
 ::: {#fig-nca-individual-fits-5}
 ![](Plots/indfits_nca_0_4.png)
@@ -594,17 +612,23 @@ Terminal elimination phase regression fits for Subjects 13 to 16.
 Terminal elimination phase regression fits for Subjects 17 to 20.
 :::
 
+## Subjects 21–24
+
 ::: {#fig-nca-individual-fits-6}
 ![](Plots/indfits_nca_0_5.png)
 
 Terminal elimination phase regression fits for Subjects 21 to 24.
 :::
 
+## Subjects 25–28
+
 ::: {#fig-nca-individual-fits-7}
 ![](Plots/indfits_nca_0_6.png)
 
 Terminal elimination phase regression fits for Subjects 25 to 28.
 :::
+
+## Subjects 29–32
 
 ::: {#fig-nca-individual-fits-8}
 ![](Plots/indfits_nca_0_7.png)
@@ -613,45 +637,633 @@ Terminal elimination phase regression fits for Subjects 29 to 32.
 :::
 :::
 
+:::
+
 ## 3.2 Derive and summarize PK parameters
 
 ::: section-card
-Calculate and interpret the primary and secondary pharmacokinetic parameters required for your analysis.
-
+The individual PK parameters were summarized using the mean, standard deviation, median, and interquartile range.
+:::
 ```{r}
-#| label: pk-parameter-summary
-#| eval: false
+#| echo: false
 
-# Add code to calculate and summarize the required PK parameters.
-# Report central tendency and variability for each relevant parameter.
+nca_data <- read_excel(
+  "Data/Data NCA.xlsx")
+
 ```
 
-**Results table**
+The individual PK parameters were summarized using the mean, standard deviation, median, and interquartile range. The complete individual NCA results are also presented.
 
-| Parameter | Unit | Summary measure | Variability measure | Interpretation |
-|:--------------|:--------------|:--------------|:--------------|:--------------|
-| *\[Parameter\]* | *\[Unit\]* | *\[Mean/median\]* | *\[SD/IQR/CI\]* | *\[Interpretation\]* |
+```{r nca-parameter-summary111}
+#| include: false
 
-*\[Add further rows or present an appropriate figure. State sample sizes and explain relevant findings and limitations.\]*
+pk_parameters <- c(
+  "Cmax (ug/mL)",
+  "Tmax (h)",
+  "AUC0-tlast (h.ug/ml)",
+  "AUC0-inf (h.ug/ml)",
+  "T1/2 (h)",
+  "kel (1/h)",
+  "CL/F (mL/h)",
+  "Vd/F (mL)"
+)
+
+pk_summary <- nca_data |>
+  select(all_of(pk_parameters)) |>
+  pivot_longer(
+    everything(),
+    names_to = "Parameter",
+    values_to = "Value"
+  ) |>
+  group_by(Parameter) |>
+  summarise(
+    N = sum(!is.na(Value)),
+    Mean = round(mean(Value, na.rm = TRUE), 2),
+    SD = round(sd(Value, na.rm = TRUE), 2),
+    Median = round(median(Value, na.rm = TRUE), 2),
+    Q1 = round(quantile(Value, 0.25, na.rm = TRUE), 2),
+    Q3 = round(quantile(Value, 0.75, na.rm = TRUE), 2),
+    .groups = "drop"
+  ) |>
+  mutate(
+    Parameter = factor(Parameter, levels = pk_parameters)
+  ) |>
+  arrange(Parameter)
+```
+
+::: {.panel-tabset}
+
+## Summary
+
+```{r nca-summary-table222}
+#| echo: false
+
+knitr::kable(
+  pk_summary,
+  align = "ccccccc",
+  caption = "Descriptive summary of NCA parameters"
+)
+```
+
+## Individual NCA Data
+
+```{r nca-individual-data222}
+#| echo: false
+
+knitr::kable(
+  nca_data,
+  align = rep("c", ncol(nca_data)),
+  digits = 2,
+  caption = "Individual NCA results for all patients"
+)
+```
+
 :::
 
 ## 3.3 Covariate pilot analysis
 
 ::: section-card
-Explore whether recorded covariates (e.g., age, weight, sex, or genotype) may be associated with PK parameters. Use simple visual and statistical methods appropriate to the data.
 
-```{r}
-#| label: covariate-analysis
-#| eval: false
+To investigate potential relationships between pharmacokinetic parameters and patient characteristics, Spearman's rank correlation analysis was performed. Five continuous covariates were evaluated: age, body weight, albumin, CRP, and creatinine.
 
-# Add exploratory plots and/or statistical tests here.
-# Adapt the code to your actual variable names and sample size.
+The Spearman correlation coefficient (ρ) and its corresponding p-value were calculated for each relationship. These analyses were considered exploratory.
+:::
+
+```{r prepare-pk-covariates}
+#| include: false
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+
+# Prepare data for covariate analysis
+nca_cov <- nca_data |>
+  mutate(
+    Dose_mg = DOSE_ug_repeated / 1000,
+    Dose_group = factor(Dose_mg),
+
+    Cmax_per_mg = `Cmax (ug/mL)` / Dose_mg,
+    AUC_last_per_mg = `AUC0-tlast (h.ug/ml)` / Dose_mg,
+    AUC_inf_per_mg = `AUC0-inf (h.ug/ml)` / Dose_mg
+  )
+
+# Continuous covariates
+continuous_covars <- c(
+  "AGE",
+  "BW_kg_",
+  "ALB_g_L_",
+  "CREAT_mg_dL_",
+  "CRP_mg_L_"
+)
+
+# PK parameters
+pk_parameters <- c(
+  "Cmax (ug/mL)",
+  "Tmax (h)",
+  "AUC0-inf (h.ug/ml)",
+  "T1/2 (h)",
+  "kel (1/h)",
+  "CL/F (mL/h)",
+  "Vd/F (mL)"
+)
+
+# Readable covariate names for plots
+cov_labels <- c(
+  "Age (years)",
+  "Body weight (kg)",
+  "Albumin (g/L)",
+  "Creatinine (mg/dL)",
+  "CRP (mg/L)"
+)
 ```
 
-**Findings**
+```{r pk-covariate-correlations.}
+#| include: false
 
-*\[Describe the relationships observed, the methods used, sample sizes, estimates or p-values where appropriate, and key limitations. Treat these as exploratory associations, not proof of causality.\]*
+library(dplyr)
+library(tidyr)
+library(knitr)
+
+# PK parameters
+pk_parameters <- c(
+  "Cmax (ug/mL)",
+  "Tmax (h)",
+  "AUC0-inf (h.ug/ml)",
+  "T1/2 (h)",
+  "kel (1/h)",
+  "CL/F (mL/h)",
+  "Vd/F (mL)"
+)
+
+# Continuous covariates
+continuous_covars <- c(
+  "AGE",
+  "BW_kg_",
+  "ALB_g_L_",
+  "CREAT_mg_dL_",
+  "CRP_mg_L_"
+)
+
+# Covariate labels
+cov_labels <- c(
+  "Age (years)",
+  "Body weight (kg)",
+  "Albumin (g/L)",
+  "Creatinine (mg/dL)",
+  "CRP (mg/L)"
+)
+
+# Reshape data
+corr_long <- nca_cov |>
+  select(
+    id, Dose_group,
+    all_of(continuous_covars),
+    all_of(pk_parameters)
+  ) |>
+  pivot_longer(
+    cols = all_of(continuous_covars),
+    names_to = "Covariate",
+    values_to = "X"
+  ) |>
+  pivot_longer(
+    cols = all_of(pk_parameters),
+    names_to = "PK_parameter",
+    values_to = "Y"
+  ) |>
+  mutate(
+    Covariate = factor(
+      Covariate,
+      levels = continuous_covars,
+      labels = cov_labels
+    )
+  )
+
+# Calculate Spearman correlations
+cor_results <- corr_long |>
+  group_by(PK_parameter, Covariate) |>
+  group_modify(~{
+    d <- .x |>
+      filter(is.finite(X), is.finite(Y))
+
+    if (
+      nrow(d) < 4 ||
+      n_distinct(d$X) < 2 ||
+      n_distinct(d$Y) < 2
+    ) {
+      return(tibble(
+        N = nrow(d),
+        rho = NA_real_,
+        p_value = NA_real_
+      ))
+    }
+
+    test <- suppressWarnings(
+      cor.test(
+        d$X, d$Y,
+        method = "spearman",
+        exact = FALSE
+      )
+    )
+
+    tibble(
+      N = nrow(d),
+      rho = unname(test$estimate),
+      p_value = test$p.value
+    )
+  }) |>
+  ungroup() |>
+  mutate(
+    Plot_label = paste0(
+      "rho = ", sprintf("%.2f", rho),
+      "\np = ", format.pval(p_value, digits = 2)
+    )
+  )
+
+# Function to display results for each PK parameter
+show_cor <- function(parameter) {
+
+  cor_results |>
+    filter(PK_parameter == parameter) |>
+    select(Covariate, N, rho, p_value) |>
+    mutate(
+      rho = round(rho, 2),
+      p_value = format.pval(p_value, digits = 3)
+    ) |>
+    knitr::kable(
+      caption = paste("Spearman correlation:", parameter)
+    , align = "cccc")
+}
+```
+
+#### Correlation results
+
+The following tables present Spearman's correlation coefficients (ρ) and corresponding p-values for each pharmacokinetic parameter and continuous covariate.
+
+::: {.panel-tabset}
+
+## Cmax
+
+```{r}
+#| echo: false
+show_cor("Cmax (ug/mL)")
+```
+
+## Tmax
+
+```{r}
+#| echo: false
+show_cor("Tmax (h)")
+```
+
+## AUC₀–∞
+
+```{r}
+#| echo: false
+show_cor("AUC0-inf (h.ug/ml)")
+```
+
+## Half-life
+
+```{r}
+#| echo: false
+show_cor("T1/2 (h)")
+```
+
+## Elimination rate constant
+
+```{r}
+#| echo: false
+show_cor("kel (1/h)")
+```
+
+## CL/F
+
+```{r}
+#| echo: false
+show_cor("CL/F (mL/h)")
+```
+
+## Vd/F
+
+```{r}
+#| echo: false
+show_cor("Vd/F (mL)")
+```
+
 :::
+
+::: section-card
+Spearman's rho (ρ) describes the strength and direction of the association between two variables, ranging from −1 to +1. Positive values indicate a positive association, whereas negative values indicate an inverse association. The p-value is used to assess statistical evidence against the null hypothesis of no association.
+
+The results should be interpreted cautiously because the analysis is exploratory and includes patients receiving different dose levels.
+:::
+
+#### PK parameter–covariate relationships
+
+Scatterplots were used to visualize the relationships between individual PK parameters and continuous patient covariates. Patients were colored according to their administered dose. Spearman's correlation coefficient (ρ) and the corresponding p-value are displayed for each relationship.
+
+```{r prepare-correlation-plots}
+#| include: false
+
+library(ggplot2)
+library(dplyr)
+
+# Function to plot each PK parameter
+plot_pk_cov <- function(parameter) {
+
+  plot_data <- corr_long |>
+    filter(
+      PK_parameter == parameter,
+      is.finite(X),
+      is.finite(Y)
+    )
+
+  plot_stats <- cor_results |>
+    filter(PK_parameter == parameter)
+
+  ggplot(plot_data, aes(x = X, y = Y)) +
+    geom_point(
+      aes(color = Dose_group),
+      size = 2.3,
+      alpha = 0.85
+    ) +
+    geom_smooth(
+      method = "lm",
+      formula = y ~ x,
+      se = FALSE,
+      color = "black",
+      linetype = "dashed",
+      linewidth = 0.6
+    ) +
+    geom_label(
+      data = plot_stats,
+      aes(
+        x = -Inf,
+        y = Inf,
+        label = Plot_label
+      ),
+      inherit.aes = FALSE,
+      hjust = 0,
+      vjust = 1,
+      size = 3,
+      fill = "white",
+      label.size = 0
+    ) +
+    facet_wrap(
+      ~Covariate,
+      scales = "free_x",
+      ncol = 3
+    ) +
+    theme_bw() +
+    theme(
+      strip.text = element_text(face = "bold"),
+      legend.position = "bottom"
+    ) +
+    labs(
+      title = paste("Covariate relationships:", parameter),
+      x = NULL,
+      y = parameter,
+      color = "Dose (mg)"
+    )
+}
+```
+
+::: {.panel-tabset}
+
+## Cmax
+
+```{r plot-cmax}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("Cmax (ug/mL)")
+```
+
+## Tmax
+
+```{r plot-tmax}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("Tmax (h)")
+```
+
+## AUC₀–∞
+
+```{r plot-auc}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("AUC0-inf (h.ug/ml)")
+```
+
+## Half-life
+
+```{r plot-half-life}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("T1/2 (h)")
+```
+
+## Elimination rate constant
+
+```{r plot-kel}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("kel (1/h)")
+```
+
+## CL/F
+
+```{r plot-cl}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("CL/F (mL/h)")
+```
+
+## Vd/F
+
+```{r plot-vd}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+plot_pk_cov("Vd/F (mL)")
+```
+
+:::
+
+
+#### Relationships between PK parameters and categorical covariates
+
+The relationships between pharmacokinetic parameters and categorical patient covariates, including sex and genetic polymorphisms, were explored using boxplots. Individual observations were overlaid and colored according to the administered dose to visualize variability between groups.
+
+```{r prepare-categorical-plots}
+#| include: false
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+categorical_covars <- c(
+  "SEX", "ABCB1", "ABCG2",
+  "CYP3A5", "UGT1A1"
+)
+
+# Prepare categorical data
+cat_long <- nca_cov |>
+  select(
+    id, Dose_group,
+    all_of(categorical_covars),
+    all_of(pk_parameters)
+  ) |>
+  mutate(
+    across(all_of(categorical_covars), as.character)
+  ) |>
+  pivot_longer(
+    cols = all_of(categorical_covars),
+    names_to = "Covariate",
+    values_to = "Category"
+  ) |>
+  pivot_longer(
+    cols = all_of(pk_parameters),
+    names_to = "PK_parameter",
+    values_to = "Value"
+  )
+
+# Function to plot categorical covariates
+plot_cat_cov <- function(parameter) {
+
+  cat_long |>
+    filter(
+      PK_parameter == parameter,
+      !is.na(Category),
+      is.finite(Value)
+    ) |>
+    ggplot(aes(x = Category, y = Value)) +
+    geom_boxplot(
+      fill = "lightgrey",
+      outlier.shape = NA
+    ) +
+    geom_jitter(
+      aes(color = Dose_group),
+      width = 0.12,
+      height = 0,
+      size = 2,
+      alpha = 0.8
+    ) +
+    facet_wrap(
+      ~Covariate,
+      scales = "free_x",
+      ncol = 3
+    ) +
+    theme_bw() +
+    theme(
+      strip.text = element_text(face = "bold"),
+      legend.position = "bottom"
+    ) +
+    labs(
+      title = paste("Categorical covariates:", parameter),
+      x = "Category",
+      y = parameter,
+      color = "Dose (mg)"
+    )
+}
+```
+
+::: {.panel-tabset}
+
+## Cmax
+
+```{r cat-cmax}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("Cmax (ug/mL)")
+```
+
+## Tmax
+
+```{r cat-tmax}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("Tmax (h)")
+```
+
+## AUC₀–∞
+
+```{r cat-auc}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("AUC0-inf (h.ug/ml)")
+```
+
+## Half-life
+
+```{r cat-half-life}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("T1/2 (h)")
+```
+
+## Elimination rate constant
+
+```{r cat-kel}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("kel (1/h)")
+```
+
+## CL/F
+
+```{r cat-cl}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("CL/F (mL/h)")
+```
+
+## Vd/F
+
+```{r cat-vd}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+#| warning: false
+
+plot_cat_cov("Vd/F (mL)")
+```
+
+:::
+
+These plots provide an exploratory visualization of potential differences in PK parameters across categorical covariates. The results should be interpreted cautiously, particularly for genotype categories containing few patients and when comparing patients from different dose groups.
+
 
 ## 3.4 Compartmental modelling
 
