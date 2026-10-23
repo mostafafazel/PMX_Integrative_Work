@@ -25,34 +25,6 @@ execute:
   message: false
   error: false
 ---
-
-```{r}
-#| label: setup
-#| include: false
-
-# Keep the original dataset unchanged.
-# Update this path to the location of your study dataset.
-data_file <- read.csv("Data/data_ug.csv")
-```
-
-```{ Packages}
-#| label: setup packages
-#| include: false
-
-#install packages needed in the report
-if (!require("pacman")) {
-  install.packages("pacman")
-  library(pacman)
-}
-
-pacman::p_load(ggpubr,
-               kableExtra,
-               DiagrammeR,
-               ggplot,
-               dplyr,
-               read.xlsx)
-```
-
 ```{=html}
 <style>
 :root {
@@ -133,7 +105,42 @@ p, li { line-height: 1.6; }
 </div>
 ```
 
-# Study overview
+# R Environment Setup {.unlisted}
+
+```{r setup-packages}
+#| include: true
+
+#Load all the necessary packages for the analysis
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(skimr)
+library(visdat)
+library(naniar)
+library(GGally)
+library(knitr)
+library(kableExtra)
+library(DiagrammeR)
+```
+
+```{r setup-data}
+#| label: setup data files
+#| include: true
+
+#Read adjusted data file
+data_file <- read.csv("Data/data_ug.csv")
+
+#Read original data file
+pa_data <- read_excel("Data/datIW1PMX006_CLEAN.xlsx")
+
+#Copy data file as backup
+data_NCA_backup <- data_file
+pa_data_backup <- pa_data
+
+```
+
+# Study overview {.unlisted}
 
 ::: section-card
 **Clinical Context & Drug Mechanism**<br> Bictegravir is an integrase strand transfer inhibitor (INSTI) used in combination antiretroviral therapy (cART) to treat HIV-1 and HIV-2. It inhibits HIV integrase, preventing viral DNA integration into the host genome and suppressing viral replication.
@@ -143,7 +150,7 @@ p, li { line-height: 1.6; }
 **Design:** Four-arm, parallel-group study evaluating single oral doses (10 mg to 100 mg).<br> **Population:** 32 healthy volunteers.<br> **Objectives:** Assess safety and tolerability, explore the maximum tolerated dose (MTD), and perform an initial evaluation of the pharmacokinetic (PK) and pharmacodynamic (PD) properties of Gajeevy to guide dose selection for Phase II/III trials.<br>
 :::
 
-# Main objective
+# Main objective {.unlisted}
 
 ::: section-card
 The overarching objective of this integrative group work is to bridge clinical pharmacology, reproducible data management, and quantitative analysis. Specifically, the project is structured around three core pillars:
@@ -197,33 +204,13 @@ Summarize the main pharmacodynamic challenges associated with bictegravir in **n
 
 # 2. Data handling and management
 
-::: section-card
 Data exploration and anomaly screening have been completed. The dataset was examined visually and statistically using `glimpse()`, `summary()`, and distribution plots with `ggplot2` to identify potential outliers, typos, and missing values. All identified irregularities were logged and addressed in our Interim Analysis report.
-:::
 
 
 ## 2.1 Data exploration
-
 The dataset was explored to assess its structure, completeness, distributions, and potential anomalies before further analysis.
 
 ### 2.1.1 Data import and overview
-
-```{r setup-data}
-#| include: false
-
-library(readxl)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(skimr)
-library(visdat)
-library(naniar)
-library(GGally)
-library(knitr)
-
-pa_data <- read_excel("Data/datIW1PMX006_CLEAN.xlsx")
-```
-
 ```{r dataset-overview}
 #| echo: false
 
@@ -238,15 +225,12 @@ pa_data |>
   knitr::kable(caption = "Dataset overview")
 ```
 
-
 ::: {.panel-tabset}
-
 
 ```{r skim-summary}
 #| echo: false
 
 skim_result <- skimr::skim(pa_data)
-#summary(pa_data)
 ```
 
 ## Numerical variables
@@ -282,7 +266,6 @@ glimpse(pa_data)
 ```
 
 :::
-
 ### 2.1.2 Dose variable preparation
 
 The dose column records administration events. Zero values at subsequent sampling times indicate that no additional dose was administered. These values were recoded as NA for event-based analysis.
@@ -290,7 +273,6 @@ The dose column records administration events. Zero values at subsequent samplin
 A separate patient-level dose variable was created to retain the administered dose across all observations.
 
 ```{r dose-handling}
-
 pa_data <- pa_data |>
   arrange(ID, `TIME_(h)`) |>
   group_by(ID) |>
@@ -306,12 +288,9 @@ patient_data <- pa_data |>
   distinct(ID, .keep_all = TRUE)
 ```
 
-
 ### 2.1.3 Data completeness and missing values
 
 Missing values were examined before recoding the dose column to distinguish unrecorded measurements from sampling times without dosing events.
-
-
 
 ```{r missing-visualization}
 #| echo: false
@@ -364,7 +343,7 @@ if (nrow(flagged_records) == 0) {
   knitr::kable(flagged_records)
 }
 ```
-
+ 
 ### 2.1.5 Univariate outlier screening
 
 The distributions of continuous baseline covariates were examined using one observation per patient to avoid counting repeated measurements multiple times.
@@ -412,7 +391,7 @@ bind_rows(baseline_long, conc_long) |>
 
 ### 2.1.6 Concentration-time profiles
 
-> Some high concentration value were observed in data and because concentration depends on administered dose and sampling time, therefore individual concentration-time profiles stratified by dose group.
+Some high concentration value were observed in data and because concentration depends on administered dose and sampling time, therefore individual concentration-time profiles stratified by dose group.
 
 ```{r concentration-time}
 #| echo: false
@@ -465,7 +444,7 @@ patient_data |>
 
 ### 2.1B Summarize the dataset
 
-::: section-card
+
 Initially, the dataset was rescaled to use smaller numerical values, facilitating subsequent Non-Compartmental Analysis (NCA) and Compartmental Analysis (CA). Specifically, concentration and dose units were converted (e.g., from ng and ng/mL to $\mu$g and $\mu$g/L). Additionally, a new column was created to associate each subject's dose with every time point, streamlining downstream analysis.
 
 ```{r}
@@ -503,13 +482,10 @@ data_ug <- data_ug %>%
 # 6. FAIR Principle: Export the processed, analysis-ready dataset securely
 write_csv(data_ug, "data/processed/datIW1PMX006_UG.csv")
 ```
-:::
 
 ## 2.2 Data Management Plan (FAIR)
 
-::: section-card
 Here a place for out DMP
-:::
 
 # 3. Pharmacokinetic analysis
 
@@ -517,7 +493,6 @@ Here a place for out DMP
 
 ### 3.1.1 NCA Methodology
 
-::: section-card
 **Aim:** Define and document the analytical settings, integration methods, and acceptance criteria used for the non-compartmental pharmacokinetic analysis (NCA) of Gajeevy.
 
 ### NCA Settings & Acceptance Criteria
@@ -557,11 +532,9 @@ To ensure optimal estimation of the terminal elimination rate constant ($\lambda
 - **Patient 21:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$, marking the transition between the absorption and elimination phases.
 - **Patient 23:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$ and did not belong to the terminal elimination phase. The resulting adjusted $R^2$ was $0.973$, remaining slightly below the acceptance criterion of $0.98$.
 - **Patient 31:** Four data points were selected because including the fifth point resulted in an adjusted $R^2$ below the acceptance criterion of $0.98$.
-:::
 
 ### 3.1.2 Individual Concentration–Time Profiles and Terminal Fits
 
-::: section-card
 The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-nca-individual-fits-1 through @fig-nca-individual-fits-8.
 
 ::: {#fig-nca-individual-fits-1}
@@ -611,11 +584,9 @@ Terminal elimination phase regression fits for Subjects 25 to 28.
 
 Terminal elimination phase regression fits for Subjects 29 to 32.
 :::
-:::
 
 ## 3.2 Derive and summarize PK parameters
 
-::: section-card
 Calculate and interpret the primary and secondary pharmacokinetic parameters required for your analysis.
 
 ```{r}
@@ -633,11 +604,9 @@ Calculate and interpret the primary and secondary pharmacokinetic parameters req
 | *\[Parameter\]* | *\[Unit\]* | *\[Mean/median\]* | *\[SD/IQR/CI\]* | *\[Interpretation\]* |
 
 *\[Add further rows or present an appropriate figure. State sample sizes and explain relevant findings and limitations.\]*
-:::
 
 ## 3.3 Covariate pilot analysis
 
-::: section-card
 Explore whether recorded covariates (e.g., age, weight, sex, or genotype) may be associated with PK parameters. Use simple visual and statistical methods appropriate to the data.
 
 ```{r}
@@ -651,13 +620,11 @@ Explore whether recorded covariates (e.g., age, weight, sex, or genotype) may be
 **Findings**
 
 *\[Describe the relationships observed, the methods used, sample sizes, estimates or p-values where appropriate, and key limitations. Treat these as exploratory associations, not proof of causality.\]*
-:::
 
 ## 3.4 Compartmental modelling
 
 ### 3.4.1 CA Methodology
 
-::: section-card
 **Aim**: Develop a preliminary compartmental model to describe the pharmacokinetics of Gajeevy following single-dose oral administration and compare alternative model structures.
 
 A compartmental analysis (CA) was performed on our clean dataset in PKAnalix2024R1.
@@ -763,11 +730,9 @@ p2 <- ggplot(data_CA, aes(
 combined_plot <- (p1 | p2)
 combined_plot
 ```
-:::
 
 ### 3.4.1 Compartment selection and evaluation
 
-::: section-card
 ### Initial model selection
 
 NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration–time profiles (@fig-Gajeevy-concentration-time-profiles), together with the NCA-derived parameters, were subsequently used to guide the selection of a preliminary compartmental model. The concentration–time profile supports the selection of an oral one-compartment model with first-order absorption and elimination. A characteristic oral absorption pattern is observed, with concentrations increasing exponentially from the first sampling point at 0.5 hours to a peak concentration at approximately 2 hours, followed by a gradual decline. This resembles a linear absorption process from the gastrointestinal tract into the systemic circulation, as no clear plateau is observed before (T_{\max}), and (C_{\max}). Subsequently AUC appears to increase approximately proportionally with dose, as shown in Figure 1.2. and table of NCA. These observations suggest dose-proportional pharmacokinetics and support the use of a one-compartment model with first-order absorption. As no data were available before the first sampling point, no absorption lag time was included, keeping the model as simple as possible without introducing an additional parameter unsupported by the available data. The post-peak decline appears approximately linear on the semi-logarithmic scale from 2 to 48 hours, which is consistent with first-order elimination. Finally, the absence of an obvious inflection point indicating a distinct distribution phase supports the use of a one-compartment model as a reasonable starting point. 
@@ -775,6 +740,7 @@ NCA provided an initial overview of the pharmacokinetic characteristics of Gajee
 ### Comparing a two-compartment system
 
 However, when we look at the concentration-time curves per dose (@fig-Gajeevy-concentration-time-profiles-per_dose), we see a slight bend (inflection point) between 4 and 8 hours after dosing in all dose groups. This could indicate a two-compartment system, in which the drug distributes into a second compartment. When we fit this model to our data, the two-compartment model yields a lower -2LL (-532.8 versus -442.7), and thus a better raw fit to the data (@tbl-ca-model-comparison). This is consistent with the fact that models with more parameters can always follow the data at least as closely, so -2LL rewards additional parameters, even when these mainly capture noise. Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC), however, also correct for model complexity by penalizing each additional parameter (AIC = -2LL + 2 × number of parameters; BIC = -2LL + ln(n) × number of parameters), so that a model only wins if it improves the fit by more than the penalty costs. Because each individual was fitted separately, the two-compartment model has 64 more parameters than the one-compartment model (161 versus 97), and this additional complexity is not justified by the gain in fit: both the AIC (-248.7 versus -210.8) and the BIC (-226.1 versus -175.6) are lower for the one-compartment model (@tbl-ca-model-comparison). The slight bend observed between 4 and 8 hours may reflect variability or noise in the data rather than a true distribution phase. The two-compartment model, being more flexible, can follow this deviation, but the data do not support a distinct second compartment.
+
 
 ```{r}
 #| label: fig-Gajeevy-concentration-time-profiles-per_dose
@@ -808,7 +774,7 @@ dose_plot
 ```{r}
 #| label: tbl-ca-model-comparison
 #| eval: true
-#| tbl-cap: "Comparison of one- and two-compartment models fitted in PKAnalix 2024R1."
+#| tbl-cap: "Fit criteria for one- and two-compartment models"
 
 model_comparison <- data.frame(
   Criterion = c(
@@ -846,6 +812,57 @@ Observed versus individual predictions of concentration (µg/mL).
 Schematic representation of the one-compartment oral pharmacokinetic model with first-order absorption and elimination.
 :::
 
+
+### 3.4.2 Individual fits
+
+The individual concentration–time profiles and their corresponding model fits for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-ca-individual-fits-1 through @fig-ca-individual-fits-8.
+
+::: {#fig-ca-individual-fits-1}
+![](Plots/indfits_ca_0_Conc_ug_mL__0.png)
+
+Terminal elimination phase regression fits for Subjects 1 to 4
+:::
+
+::: {#fig-ca-individual-fits-2}
+![](Plots/indfits_ca_0_Conc_ug_mL__1.png)
+
+Terminal elimination phase regression fits for Subjects 5 to 8
+:::
+
+::: {#fig-ca-individual-fits-3}
+![](Plots/indfits_ca_0_Conc_ug_mL__2.png)
+
+Terminal elimination phase regression fits for Subjects 9 to 12
+:::
+
+::: {#fig-ca-individual-fits-4}
+![](Plots/indfits_ca_0_Conc_ug_mL__3.png)
+
+Terminal elimination phase regression fits for Subjects 13 to 16
+:::
+
+::: {#fig-ca-individual-fits-5}
+![](Plots/indfits_ca_0_Conc_ug_mL__4.png)
+
+Terminal elimination phase regression fits for Subjects 17 to 20
+:::
+
+::: {#fig-ca-individual-fits-6}
+![](Plots/indfits_ca_0_Conc_ug_mL__5.png)
+
+Terminal elimination phase regression fits for Subjects 21 to 24
+:::
+
+::: {#fig-ca-individual-fits-7}
+![](Plots/indfits_ca_0_Conc_ug_mL__6.png)
+
+Terminal elimination phase regression fits for Subjects 25 to 28
+:::
+
+::: {#fig-ca-individual-fits-8}
+![](Plots/indfits_ca_0_Conc_ug_mL__7.png)
+
+Terminal elimination phase regression fits for Subjects 29 to 32
 :::
 
 ## Software environment
