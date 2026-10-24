@@ -199,23 +199,21 @@ A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg
 ## 1.3 Main pharmacokinetic challenges
 
 ::: section-card
-Summarize the main pharmacokinetic challenges associated with bictegravir in **no more than five bullet points**.
+- The co-administration of bictegravir with divalent cations (e.g., magnesium, iron, calcium and zinc) can significantly reduce its bioavailability. [@ekobena_population_2025]
 
-- *\[Challenge 1\]*
-- *\[Challenge 2\]*
-- *\[Challenge 3\]*
-- *\[Add up to five points in total.\]*
+- As a result of co-administration with potent dual inhibitors or inducers of CYP3A4 and UGT1A1 (e.g., atazanavir, a protease inhibitor), clinically significant DDIs are expected. [@ekobena_population_2025]
+
+- Pregnancy alters bictegravir pharmacokinetics. Despite evidence supporting its use during pregnancy, data on safety during breastfeeding and effects on infants remain limited. [@holt_bictegravir_2024]
+
+- Bictegravir pharmacokinetics in adults aged 65 years and older remain insufficiently characterised, despite no clinically relevant age effect on exposure being identified in population pharmacokinetic analyses. [@noauthor_biktarvy_2018]
 :::
 
 ## 1.4 Main pharmacodynamic challenges
 
 ::: section-card
-Summarize the main pharmacodynamic challenges associated with bictegravir in **no more than five bullet points**. Consider mechanism of action, antiviral efficacy, resistance, therapeutic window, and variability in response.
+- As mentioned above, no clinically validated exposure target has been established due to the absence of a clear exposure–response relationship. The proposed threshold of 760 ng/mL is based on theoretical considerations and clinical observations.  [@ekobena_population_2025]
 
-- *\[Challenge 1\]*
-- *\[Challenge 2\]*
-- *\[Challenge 3\]*
-- *\[Add up to five points in total.\]*
+- Suboptimal adherence may lead to inadequate drug exposure and ongoing viral replication, potentially promoting the selection of resistant HIV variants. This may reduce bictegravir susceptibility and compromise long-term virological suppression. Therefore, maintaining treatment adherence is essential to preserve treatment efficacy. [@noauthor_hiv_nodate]
 :::
 
 # 2. Data handling and management
