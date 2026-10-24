@@ -1,8 +1,23 @@
 ---
 title: "Integrative Group Work 1"
-subtitle: "Clinical Pharmacology and Data Analysis"
-author: "Daan Demeulenaere, \n Sokeng Tsake Shanice, \n Seyed Mostafa Fazel Hosein"
+subtitle: |
+   Clinical Pharmacology and Data Analysis <br>
+   Phase I Study of a Novel Bictegravir-like Drug
+author:
+  - "Daan Demeulenaere"
+  - "Sokeng Tsake Shanice"
+  - "Seyed Mostafa Fazel Hosein"
+
+institute: UCLouvain & KULeuven
+date: October 26, 2026
+bibliography: IW1.bib
+
 title-block-banner: "#73394f"
+code-links:
+  - text: "GitHub Repository"
+    icon: github
+    href: https://github.com/mostafafazel/PMX_Integrative_Work
+    target: _blank
 
 format:
   html:
@@ -10,7 +25,7 @@ format:
     toc: true
     toc-location: right
     toc-title: "Contents"
-    toc-depth: 2
+    toc-depth: 4
     number-sections: false
     code-fold: true
     code-summary: "Show R code"
@@ -25,6 +40,7 @@ execute:
   message: false
   error: false
 ---
+
 ```{=html}
 <style>
 :root {
@@ -105,10 +121,10 @@ p, li { line-height: 1.6; }
 </div>
 ```
 
-# R Environment Setup {.unlisted}
-
 ```{r setup-packages}
-#| include: true
+#| echo: false
+
+#R Environment Setup
 
 #Load all the necessary packages for the analysis
 library(readxl)
@@ -125,8 +141,8 @@ library(DiagrammeR)
 ```
 
 ```{r setup-data}
-#| label: setup data files
-#| include: true
+#| echo: false
+
 
 #Read adjusted data file
 data_file <- read.csv("Data/data_ug.csv")
@@ -163,11 +179,11 @@ The overarching objective of this integrative group work is to bridge clinical p
 ## 1.1 Literature review
 
 ::: section-card
-Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome. Combination antiretroviral therapy (cART) can suppress viral replication to undetectable levels, preserve immune function, and prevent disease progression; however, it cannot eradicate HIV from the body.
+Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome. [@biktarvy2018] Combination antiretroviral therapy (cART) can suppress viral replication to undetectable levels, preserve immune function, and prevent disease progression; however, it cannot eradicate HIV from the body.[@biktarvy2018- @ekobena_population_2025]
 
-Bictegravir is marketed in a once-daily fixed-dose combination with emtricitabine and tenofovir alafenamide, both reverse transcriptase inhibitors. It exhibits potent antiviral activity against HIV-1 (EC50 \<0.05–6.6 nM), with a protein-adjusted EC95 of 361 nM (0.162 µg/mL) for wild-type HIV-1, and is also active against HIV-2. A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) was associated with adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established. No upper limit has been defined due to the lack of significant dose-dependent toxicity.
+Bictegravir is marketed in a once-daily fixed-dose combination with emtricitabine and tenofovir alafenamide, both reverse transcriptase inhibitors. It exhibits potent antiviral activity against HIV-1 (EC50 \<0.05–6.6 nM), with a protein-adjusted EC95 of 361 nM (0.162 µg/mL) for wild-type HIV-1, and is also active against HIV-2. A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) was associated with adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established. No upper limit has been defined due to the lack of significant dose-dependent toxicity.[@hivtrea- @subramanian_human_2022]
 
-Bictegravir is classified as a Biopharmaceutics Classification System (BCS) class II drug, characterised by low solubility and high permeability. Its estimated oral bioavailability exceeds 61%, with dose linearity reported between 25 and 100 mg. Peak plasma concentrations are reached within 2–4 hours, and food (moderate‑fat or high‑fat meal) increases AUC by approximately 24% compared to fasted state, without a clinically relevant effect.
+Bictegravir is classified as a Biopharmaceutics Classification System (BCS) class II drug [@kandi_clinical_2023], characterised by low solubility and high permeability. Its estimated oral bioavailability exceeds 61%, with dose linearity reported between 25 and 100 mg. Peak plasma concentrations are reached within 2–4 hours, and food (moderate‑fat or high‑fat meal) increases AUC by approximately 24% compared to fasted state, without a clinically relevant effect.
 
 Bictegravir exhibits extensive plasma protein binding (\>99%), with an unbound fraction of approximately 0.25% in vitro. It is primarily metabolised by CYP3A and UGT1A1. Approximately 60.5% of a radiolabelled dose is recovered in feces and 35% in urine, predominantly as metabolites; only 1.3% is excreted unchanged in urine. Renal impairment is therefore not expected to substantially affect exposure. Bictegravir is also a substrate of P-glycoprotein (P-gp) and BCRP and has a plasma elimination half-life of approximately 17.3 hours.
 :::
@@ -177,7 +193,7 @@ Bictegravir exhibits extensive plasma protein binding (\>99%), with an unbound f
 ::: section-card
 The dataset originates from a Phase 1a single ascending dose (SAD) study investigating Gajeevy, an investigational drug with structural and mechanistic similarities to bictegravir. The study was designed as a four-arm, parallel-group study with oral administration.
 
-A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg. The primary objectives were to assess safety and tolerability and, where applicable, explore the maximum tolerated dose. Secondary objectives included characterising the pharmacokinetic and pharmacodynamic properties of Gajeevy. The findings will inform dose selection for subsequent Phase II trials in patients and guide further clinical development. Phase III trials then evaluate the drug’s safety and efficacy in larger patient populations before regulatory approval and market authorisation.
+A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg. The primary objectives were to assess safety and tolerability and, where applicable, explore the maximum tolerated dose. Secondary objectives included characterising the pharmacokinetic and pharmacodynamic properties of Gajeevy. The findings will inform dose selection for subsequent Phase II trials in patients and guide further clinical development. Phase III trials then evaluate the drug’s safety and efficacy in larger patient populations before regulatory approval and market authorisation. [@holt_bictegravir_2024]
 :::
 
 ## 1.3 Main pharmacokinetic challenges
@@ -205,8 +221,6 @@ Summarize the main pharmacodynamic challenges associated with bictegravir in **n
 # 2. Data handling and management
 
 Data exploration and anomaly screening have been completed. The dataset was examined visually and statistically using `glimpse()`, `summary()`, and distribution plots with `ggplot2` to identify potential outliers, typos, and missing values. All identified irregularities were logged and addressed in our Interim Analysis report.
-
-
 
 ## 2.1 Dataset Overview and Structure
 
@@ -248,8 +262,7 @@ Numerical and categorical variables were examined to summarize their distributio
 skim_result <- skimr::skim(pa_data)
 ```
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Numerical variables
 
 ```{r skim-numeric}
@@ -281,54 +294,7 @@ pa_data |>
 
 glimpse(pa_data)
 ```
-
 :::
-
-## 2.1.3 Variable Distribution
-
-```{r baseline-violin-plots}
-#| echo: false
-#| fig-width: 11
-#| fig-height: 7
-
-patient_data |>
-  mutate(SEX = factor(SEX)) |>
-  select(SEX, all_of(baseline_vars)) |>
-  pivot_longer(
-    cols = all_of(baseline_vars),
-    names_to = "Variable",
-    values_to = "Value"
-  ) |>
-  ggplot(aes(x = SEX, y = Value, fill = SEX)) +
-  geom_violin(
-    trim = FALSE,
-    alpha = 0.5
-  ) +
-  geom_boxplot(
-    width = 0.15,
-    outlier.shape = NA
-  ) +
-  geom_jitter(
-    width = 0.1,
-    size = 0.5
-  ) +
-  scale_fill_brewer(palette = "Set1") +
-  facet_wrap(
-    ~Variable,
-    scales = "free_y",
-    ncol = 3
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = "none",
-    strip.text = element_text(face = "bold")
-  ) +
-  labs(
-    title = "Distribution of baseline covariates by sex",
-    x = "Sex",
-    y = "Value"
-  )
-```
 
 ## 2.2 Data Preparation and Quality Assessment
 
@@ -416,7 +382,59 @@ if (nrow(flagged_records) == 0) {
 
 Exploratory analyses were performed to examine numerical distributions, identify potentially unusual observations, and investigate relationships among patient characteristics.
 
-### 2.3.1 Univariate Distribution Assessment
+### 2.3.1 Variable Distribution
+
+To explore the distribution of baseline characteristics, we used violin plots combined with boxplots and individual data points. Five continuous variables were examined: body weight, age, albumin, CRP, and serum creatinine. We used one observation per patient to avoid counting repeated measurements and grouped the results by sex.
+
+```{r baseline-violin-plots}
+#| echo: false
+#| fig-width: 11
+#| fig-height: 7
+
+patient_data |>
+  mutate(SEX = factor(SEX)) |>
+  select(SEX, all_of(baseline_vars)) |>
+  pivot_longer(
+    cols = all_of(baseline_vars),
+    names_to = "Variable",
+    values_to = "Value"
+  ) |>
+  ggplot(aes(x = SEX, y = Value, fill = SEX)) +
+  geom_violin(
+    trim = FALSE,
+    alpha = 0.5
+  ) +
+  geom_boxplot(
+    width = 0.15,
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    width = 0.1,
+    size = 0.5
+  ) +
+  scale_fill_brewer(palette = "Set1") +
+  facet_wrap(
+    ~Variable,
+    scales = "free_y",
+    ncol = 3
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold")
+  ) +
+  labs(
+    title = "Distribution of baseline covariates by sex",
+    x = "Sex",
+    y = "Value"
+  )
+```
+
+These plots allow us to compare the spread and central tendency of each variable between sexes and identify potentially unusual values. The violin plots illustrate the estimated distribution, while the boxplots show the median and interquartile range. Individual points help us examine the actual observations, especially given the relatively small sample size.
+
+This analysis provides an initial overview of variability in patient characteristics and helps identify values that may require further investigation. Any apparent differences between sexes should be interpreted cautiously, as this is an exploratory visualization rather than a formal statistical comparison.
+
+### 2.3.2 Univariate Distribution Assessment
 
 The distributions of continuous baseline covariates were examined using one observation per patient to avoid counting repeated measurements multiple times.
 
@@ -462,7 +480,7 @@ bind_rows(baseline_long, conc_long) |>
   )
 ```
 
-### 2.3.2 Concentration–Time Profile Assessment
+### 2.3.3 Concentration–Time Profile Assessment
 
 Some high concentration values were observed during the initial exploration. Since drug concentrations depend on administered dose and sampling time, individual concentration–time profiles were examined separately by dose group to assess their pharmacokinetic plausibility.
 
@@ -495,7 +513,7 @@ pa_data |>
   )
 ```
 
-### 2.3.3 Multivariate Outlier Screening
+### 2.3.4 Multivariate Outlier Screening
 
 Potential multivariate outliers were investigated using pairwise scatter plots of patient-level covariates. This approach was used to identify unusual combinations of baseline characteristics that might not be apparent in individual variable distributions.
 
@@ -559,7 +577,7 @@ data_ug <- data_ug %>%
 #write_csv(data_ug, "Data/datIW1PMX006_UG.csv")
 ```
 
-## 2.2 Data Management Plan (FAIR)
+## 2.5 Data Management Plan (FAIR)
 
 Here a place for out DMP
 
@@ -609,15 +627,13 @@ To ensure optimal estimation of the terminal elimination rate constant ($\lambda
 - **Patient 23:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$ and did not belong to the terminal elimination phase. The resulting adjusted $R^2$ was $0.973$, remaining slightly below the acceptance criterion of $0.98$.
 - **Patient 31:** Four data points were selected because including the fifth point resulted in an adjusted $R^2$ below the acceptance criterion of $0.98$.
 
-
 ### 3.1.2 Individual Concentration–Time Profiles and Terminal Fits
 
 ::: section-card
 The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKanalix 2024R1 are presented below. Each tab displays the terminal phase regression fits for four subjects.
 :::
 
-::: {.panel-tabset}
-
+::::::::::: panel-tabset
 ## Subjects 1–4
 
 ::: {#fig-nca-individual-fits-1}
@@ -681,14 +697,9 @@ Terminal elimination phase regression fits for Subjects 25 to 28.
 
 Terminal elimination phase regression fits for Subjects 29 to 32.
 :::
-
-:::
+:::::::::::
 
 ## 3.2 Derive and summarize PK parameters
-
-::: section-card
-The individual PK parameters were summarized using the mean, standard deviation, median, and interquartile range.
-:::
 
 ```{r}
 #| echo: false
@@ -737,8 +748,7 @@ pk_summary <- nca_data |>
   arrange(Parameter)
 ```
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Summary
 
 ```{r nca-summary-table222}
@@ -763,17 +773,18 @@ knitr::kable(
   caption = "Individual NCA results for all patients"
 )
 ```
-
 :::
 
-
-## 3.3 Covariate analysis
+## 3.3 Covariate Analysis of PK Parameters
 
 ::: section-card
+To investigate potential relationships between patient characteristics and pharmacokinetic (PK) parameters, an exploratory covariate analysis was performed using individual parameters estimated from non-compartmental analysis (NCA).
 
-To investigate potential relationships between pharmacokinetic parameters and patient characteristics, Spearman's rank correlation analysis was performed. Five continuous covariates were evaluated: age, body weight, albumin, CRP, and creatinine.
+Five continuous covariates (age, body weight, albumin, creatinine, and CRP) were assessed using Spearman's rank correlation, with correlation coefficients (ρ) and corresponding p-values reported. Scatterplots were also generated to visualize these relationships.
 
-The Spearman correlation coefficient (ρ) and its corresponding p-value were calculated for each relationship. These analyses were considered exploratory.
+Categorical covariates, including sex and four genetic polymorphisms (ABCB1, ABCG2, CYP3A5, and UGT1A1), were explored using boxplots with individual observations. Dose groups were distinguished by color to help identify potential dose-related patterns.
+
+These analyses were considered exploratory and were intended to identify potential covariate relationships for further investigation.
 :::
 
 ```{r prepare-pk-covariates}
@@ -943,12 +954,11 @@ show_cor <- function(parameter) {
 }
 ```
 
-### 3.3.1 Correlation results
+### 3.3.1 Spearman Correlation Analysis of Continuous Covariates
 
 The following tables present Spearman's correlation coefficients (ρ) and corresponding p-values for each pharmacokinetic parameter and continuous covariate.
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Cmax
 
 ```{r}
@@ -997,16 +1007,9 @@ show_cor("CL/F (mL/h)")
 #| echo: false
 show_cor("Vd/F (mL)")
 ```
-
 :::
 
-::: section-card
-Spearman's rho (ρ) describes the strength and direction of the association between two variables, ranging from −1 to +1. Positive values indicate a positive association, whereas negative values indicate an inverse association. The p-value is used to assess statistical evidence against the null hypothesis of no association.
-
-The results should be interpreted cautiously because the analysis is exploratory and includes patients receiving different dose levels.
-:::
-
-### 3.3.2 PK parameter–covariate relationships
+### 3.3.2 Visualization of Continuous Covariate Relationships
 
 Scatterplots were used to visualize the relationships between individual PK parameters and continuous patient covariates. Patients were colored according to their administered dose. Spearman's correlation coefficient (ρ) and the corresponding p-value are displayed for each relationship.
 
@@ -1076,8 +1079,7 @@ plot_pk_cov <- function(parameter) {
 }
 ```
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Cmax
 
 ```{r plot-cmax}
@@ -1147,11 +1149,9 @@ plot_pk_cov("CL/F (mL/h)")
 
 plot_pk_cov("Vd/F (mL)")
 ```
-
 :::
 
-
-### 3.3.3 Relationships between PK parameters and categorical covariates
+### 3.3.3 Exploratory Analysis of Sex and Genetic Polymorphisms
 
 The relationships between pharmacokinetic parameters and categorical patient covariates, including sex and genetic polymorphisms, were explored using boxplots. Individual observations were overlaid and colored according to the administered dose to visualize variability between groups.
 
@@ -1228,8 +1228,7 @@ plot_cat_cov <- function(parameter) {
 }
 ```
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Cmax
 
 ```{r cat-cmax}
@@ -1306,11 +1305,73 @@ plot_cat_cov("CL/F (mL/h)")
 
 plot_cat_cov("Vd/F (mL)")
 ```
-
 :::
 
-These plots provide an exploratory visualization of potential differences in PK parameters across categorical covariates. The results should be interpreted cautiously, particularly for genotype categories containing few patients and when comparing patients from different dose groups.
+### 3.3.4 Summary of Covariate Findings and Interpretation
 
+```{r covariate-summary}
+#| echo: false
+#| results: asis
+
+cov_summary <- cor_results |>
+  filter(!is.na(rho), !is.na(p_value)) |>
+  ungroup() |>
+  mutate(
+    p_BH = p.adjust(p_value, method = "BH")
+  )
+
+if (nrow(cov_summary) > 0) {
+  nominal <- cov_summary |>
+    filter(p_value < 0.05)
+
+  cat(
+    "A total of", nrow(cov_summary),
+    "Spearman correlations were evaluated.",
+    nrow(nominal),
+    "had unadjusted p-values below 0.05, and",
+    sum(cov_summary$p_BH < 0.05),
+    "remained below 0.05 after Benjamini-Hochberg",
+    "adjustment.\n\n"
+  )
+
+  if (nrow(nominal) > 0) {
+    nominal |>
+      arrange(p_value) |>
+      transmute(
+        `PK parameter` = PK_parameter,
+        Covariate,
+        N,
+        rho = round(rho, 2),
+        `p-value` = signif(p_value, 3),
+        `BH-adjusted p` = signif(p_BH, 3)
+      ) |>
+      knitr::kable(
+        caption = "Exploratory correlations with unadjusted p < 0.05"
+      ) |>
+      print()
+  }
+}
+```
+
+> Continuous covariates
+
+Spearman correlation analysis was performed to investigate relationships between five continuous covariates and seven NCA-derived PK parameters. The analysis evaluated the strength and direction of these relationships, while scatterplots were used to visualize individual variability and possible trends.
+
+Among the 35 correlations evaluated, five had unadjusted p-values below 0.05, of which two remained statistically significant after Benjamini–Hochberg adjustment. The strongest positive correlation was observed between body weight and Vd/F (ρ = 0.55, p = 0.00108, adjusted p = 0.0377), suggesting that individuals with higher body weight tended to have a larger apparent volume of distribution. A significant negative correlation was also identified between age and CL/F (ρ = −0.52, p = 0.00232, adjusted p = 0.0405), indicating a tendency toward lower apparent clearance with increasing age.
+
+Additional correlations were observed between body weight and the elimination rate constant (ρ = −0.41), body weight and half-life (ρ = 0.40), and age and half-life (ρ = 0.35). However, these associations did not remain statistically significant after adjustment for multiple comparisons.
+
+> Categorical covariates
+
+The boxplots were used to explore differences in PK parameters between sexes and across four genetic polymorphisms (ABCB1, ABCG2, CYP3A5, and UGT1A1). These visualizations allowed the comparison of individual variability and the distribution of PK parameters across different categories, while also considering the administered dose.
+
+> Overall interpretation
+
+The exploratory analysis identified body weight and age as potential covariates influencing pharmacokinetic variability, particularly apparent volume of distribution and apparent clearance, respectively.
+
+However, given the limited sample size (32 individuals), multiple comparisons, and possible influence of administered dose, these findings should be interpreted cautiously and do not establish causal relationships.
+
+The observed associations provide a basis for selecting candidate covariates for further evaluation in population pharmacokinetic modeling, where their effects can be investigated while accounting for other sources of variability.
 
 ## 3.4 Compartmental modelling
 
@@ -1426,12 +1487,11 @@ combined_plot
 
 ### Initial model selection
 
-NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration–time profiles (@fig-Gajeevy-concentration-time-profiles), together with the NCA-derived parameters, were subsequently used to guide the selection of a preliminary compartmental model. The concentration–time profile supports the selection of an oral one-compartment model with first-order absorption and elimination. A characteristic oral absorption pattern is observed, with concentrations increasing exponentially from the first sampling point at 0.5 hours to a peak concentration at approximately 2 hours, followed by a gradual decline. This resembles a linear absorption process from the gastrointestinal tract into the systemic circulation, as no clear plateau is observed before (T_{\max}), and (C_{\max}). Subsequently AUC appears to increase approximately proportionally with dose, as shown in Figure 1.2. and table of NCA. These observations suggest dose-proportional pharmacokinetics and support the use of a one-compartment model with first-order absorption. As no data were available before the first sampling point, no absorption lag time was included, keeping the model as simple as possible without introducing an additional parameter unsupported by the available data. The post-peak decline appears approximately linear on the semi-logarithmic scale from 2 to 48 hours, which is consistent with first-order elimination. Finally, the absence of an obvious inflection point indicating a distinct distribution phase supports the use of a one-compartment model as a reasonable starting point. 
+NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration–time profiles (@fig-Gajeevy-concentration-time-profiles), together with the NCA-derived parameters, were subsequently used to guide the selection of a preliminary compartmental model. The concentration–time profile supports the selection of an oral one-compartment model with first-order absorption and elimination. A characteristic oral absorption pattern is observed, with concentrations increasing exponentially from the first sampling point at 0.5 hours to a peak concentration at approximately 2 hours, followed by a gradual decline. This resembles a linear absorption process from the gastrointestinal tract into the systemic circulation, as no clear plateau is observed before (T\_{\max}), and (C\_{\max}). Subsequently AUC appears to increase approximately proportionally with dose, as shown in Figure 1.2. and table of NCA. These observations suggest dose-proportional pharmacokinetics and support the use of a one-compartment model with first-order absorption. As no data were available before the first sampling point, no absorption lag time was included, keeping the model as simple as possible without introducing an additional parameter unsupported by the available data. The post-peak decline appears approximately linear on the semi-logarithmic scale from 2 to 48 hours, which is consistent with first-order elimination. Finally, the absence of an obvious inflection point indicating a distinct distribution phase supports the use of a one-compartment model as a reasonable starting point.
 
 ### Comparing a two-compartment system
 
 However, when we look at the concentration-time curves per dose (@fig-Gajeevy-concentration-time-profiles-per_dose), we see a slight bend (inflection point) between 4 and 8 hours after dosing in all dose groups. This could indicate a two-compartment system, in which the drug distributes into a second compartment. When we fit this model to our data, the two-compartment model yields a lower -2LL (-532.8 versus -442.7), and thus a better raw fit to the data (@tbl-ca-model-comparison). This is consistent with the fact that models with more parameters can always follow the data at least as closely, so -2LL rewards additional parameters, even when these mainly capture noise. Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC), however, also correct for model complexity by penalizing each additional parameter (AIC = -2LL + 2 × number of parameters; BIC = -2LL + ln(n) × number of parameters), so that a model only wins if it improves the fit by more than the penalty costs. Because each individual was fitted separately, the two-compartment model has 64 more parameters than the one-compartment model (161 versus 97), and this additional complexity is not justified by the gain in fit: both the AIC (-248.7 versus -210.8) and the BIC (-226.1 versus -175.6) are lower for the one-compartment model (@tbl-ca-model-comparison). The slight bend observed between 4 and 8 hours may reflect variability or noise in the data rather than a true distribution phase. The two-compartment model, being more flexible, can follow this deviation, but the data do not support a distinct second compartment.
-
 
 ```{r}
 #| label: fig-Gajeevy-concentration-time-profiles-per_dose
@@ -1503,13 +1563,11 @@ Observed versus individual predictions of concentration (µg/mL).
 Schematic representation of the one-compartment oral pharmacokinetic model with first-order absorption and elimination.
 :::
 
-
 ### 3.4.2 Individual fits
 
 The individual concentration–time profiles and their corresponding model fits for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-ca-individual-fits-1 through @fig-ca-individual-fits-8.
 
-::: {.panel-tabset}
-
+::::::::::: panel-tabset
 ## Subjects 1–4
 
 ::: {#fig-ca-individual-fits-1}
@@ -1573,7 +1631,11 @@ Terminal elimination phase regression fits for Subjects 25 to 28
 
 Terminal elimination phase regression fits for Subjects 29 to 32
 :::
+:::::::::::
 
+## References
+
+::: {#refs}
 :::
 
 ## Software environment
