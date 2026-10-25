@@ -179,9 +179,9 @@ The overarching objective of this integrative group work is to bridge clinical p
 ## 1.1 Literature review
 
 ::: section-card
-Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome. [@biktarvy2018] Combination antiretroviral therapy (cART) can suppress viral replication to undetectable levels, preserve immune function, and prevent disease progression; however, it cannot eradicate HIV from the body.[@biktarvy2018- @ekobena_population_2025]
+Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome. [@biktarvy2018] Combination antiretroviral therapy (cART) can suppress viral replication to undetectable levels, preserve immune function, and prevent disease progression; however, it cannot eradicate HIV from the body. [@biktarvy2018- @ekobena_population_2025]
 
-Bictegravir is marketed in a once-daily fixed-dose combination with emtricitabine and tenofovir alafenamide, both reverse transcriptase inhibitors. It exhibits potent antiviral activity against HIV-1 (EC50 \<0.05–6.6 nM), with a protein-adjusted EC95 of 361 nM (0.162 µg/mL) for wild-type HIV-1, and is also active against HIV-2. A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) was associated with adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established. No upper limit has been defined due to the lack of significant dose-dependent toxicity.[@hivtrea- @subramanian_human_2022]
+Bictegravir is marketed in a once-daily fixed-dose combination with emtricitabine and tenofovir alafenamide, both reverse transcriptase inhibitors. It exhibits potent antiviral activity against HIV-1 (EC50 \<0.05–6.6 nM), with a protein-adjusted EC95 of 361 nM (0.162 µg/mL) for wild-type HIV-1, and is also active against HIV-2. A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) was associated with adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established. No upper limit has been defined due to the lack of significant dose-dependent toxicity. [@hivtrea- @subramanian_human_2022]
 
 Bictegravir is classified as a Biopharmaceutics Classification System (BCS) class II drug [@kandi_clinical_2023], characterised by low solubility and high permeability. Its estimated oral bioavailability exceeds 61%, with dose linearity reported between 25 and 100 mg. Peak plasma concentrations are reached within 2–4 hours, and food (moderate‑fat or high‑fat meal) increases AUC by approximately 24% compared to fasted state, without a clinically relevant effect.
 
@@ -199,21 +199,25 @@ A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg
 ## 1.3 Main pharmacokinetic challenges
 
 ::: section-card
-- The co-administration of bictegravir with divalent cations (e.g., magnesium, iron, calcium and zinc) can significantly reduce its bioavailability. [@ekobena_population_2025]
+- Metabolic drug–drug interactions : Bictegravir is metabolised by both CYP3A and UGT1A1, making its exposure sensitive to enzyme induction or inhibition. For example, rifampicin decreases bictegravir AUC by approximately 75%, potentially compromising antiviral efficacy. [@ekobena_population_2025]
 
-- As a result of co-administration with potent dual inhibitors or inducers of CYP3A4 and UGT1A1 (e.g., atazanavir, a protease inhibitor), clinically significant DDIs are expected. [@ekobena_population_2025]
+- Absorption interactions with polyvalent cations : Chelation with magnesium, aluminium, iron or calcium can substantially reduce oral absorption. Simultaneous administration with magnesium/aluminium-containing antacids under fasting conditions decreases bictegravir AUC by approximately 79%, requiring careful administration timing. [@ekobena_population_2025]
 
-- Pregnancy alters bictegravir pharmacokinetics. Despite evidence supporting its use during pregnancy, data on safety during breastfeeding and effects on infants remain limited. [@holt_bictegravir_2024]
+- High plasma protein binding : Bictegravir is highly bound to plasma proteins, limiting its removal by dialysis and complicating the management of excessive exposure or overdose. [@noauthor_biktarvy_2018]
 
-- Bictegravir pharmacokinetics in adults aged 65 years and older remain insufficiently characterised, despite no clinically relevant age effect on exposure being identified in population pharmacokinetic analyses. [@noauthor_biktarvy_2018]
+- Pharmacokinetic changes in special populations : Bictegravir exposure is reduced during pregnancy, potentially affecting antiviral coverage. Severe hepatic impairment has not been adequately studied, creating uncertainty regarding exposure and appropriate use in this population. [@holt_bictegravir_2024]
 :::
 
 ## 1.4 Main pharmacodynamic challenges
 
 ::: section-card
-- As mentioned above, no clinically validated exposure target has been established due to the absence of a clear exposure–response relationship. The proposed threshold of 760 ng/mL is based on theoretical considerations and clinical observations.  [@ekobena_population_2025]
+- Dependence on integrase inhibition: Bictegravir inhibits the HIV integrase strand-transfer step, preventing viral DNA integration. Sustained antiviral activity requires sufficient inhibition of this essential replication process. [@ekobena_population_2025]
 
-- Suboptimal adherence may lead to inadequate drug exposure and ongoing viral replication, potentially promoting the selection of resistant HIV variants. This may reduce bictegravir susceptibility and compromise long-term virological suppression. Therefore, maintaining treatment adherence is essential to preserve treatment efficacy. [@noauthor_hiv_nodate]
+- Development of viral resistance: Mutations in the HIV integrase gene, including R263K and combinations involving Q148H/K/R, may reduce viral susceptibility to bictegravir and compromise treatment effectiveness. [@noauthor_hiv_nodate]
+
+- Balancing efficacy and tolerability: Although bictegravir-containing therapy is generally well tolerated, adverse reactions such as headache, diarrhoea and nausea must be considered when evaluating the overall benefit–risk profile. [@noauthor_hiv_nodate]
+
+- Variability in antiviral response: Differences in viral susceptibility, pre-existing resistance mutations and patient-specific factors may influence treatment outcomes, highlighting the importance of virological monitoring and appropriate treatment selection. [@noauthor_hiv_nodate]
 :::
 
 # 2. Data handling and management
@@ -577,7 +581,13 @@ data_ug <- data_ug %>%
 
 ## 2.5 Data Management Plan (FAIR)
 
-Here a place for out DMP
+The Data Management Plan for Gajeevy’s Phase Ia SAD study has been developed in accordance with the FAIR principles. The proposed strategy aims to improve data findability through structured documentation, ensure accessibility through controlled access, promote interoperability using standardised data formats and variable definitions, and support reusability through traceable data processing and reproducible pharmacokinetic analyses.
+
+The implementation of these measures will be documented and verified throughout the project, while respecting participant confidentiality and the company’s intellectual property requirements.
+
+**The complete Data Management Plan is available here:**
+
+[View Data Management Plan (PDF)](DMP.pdf)
 
 # 3. Pharmacokinetic analysis
 
@@ -1305,7 +1315,7 @@ plot_cat_cov("Vd/F (mL)")
 ```
 :::
 
-### 3.3.4 Summary of Covariate Findings and Interpretation
+### 3.3.4 Summary of Covariate analysis
 
 ```{r covariate-summary}
 #| echo: false

@@ -1,7 +1,6 @@
 ## ---
-title: "Interpretation PK parameters"
-format: html
----
+
+title: "Interpretation PK parameters" format: html ---
 
 ## Quarto
 
