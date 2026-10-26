@@ -1760,6 +1760,10 @@ Terminal elimination phase regression fits for Subjects 29 to 32
 :::
 :::::::::::
 
+# License
+
+© 2026 Gajeevy Project Authors. This report is licensed under CC BY-NC-SA 4.0. Excludes clinical trial data and third-party materials.
+
 ## References
 
 ::: {#refs}
