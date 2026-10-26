@@ -1381,9 +1381,236 @@ However, given the limited sample size (32 individuals), multiple comparisons, a
 
 The observed associations provide a basis for selecting candidate covariates for further evaluation in population pharmacokinetic modeling, where their effects can be investigated while accounting for other sources of variability.
 
-## 3.4 Compartmental modelling
+# 3.4 Comparison of Gajeevy and Bictegravir PK Parameters
 
-### 3.4.1 CA Methodology
+The individual non-compartmental analysis (NCA) results were summarized separately for each single-dose group. Values are reported as **median \[Q1–Q3\]**, using one NCA record per participant. The table is calculated from the original exported NCA data rather than manually transcribing the summary.
+
+```{r nca-ext-prepare}
+#| include: false
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+
+# In the main dashboard, nca_data is already read in Section 3.2.
+# This fallback also allows this section to be reused elsewhere.
+if (!exists("nca_data")) {
+  nca_data <- readxl::read_excel("Data/Data NCA.xlsx")
+}
+
+# Existing NCA export uses DOSE_ug_repeated (micrograms).
+dose_candidates <- c("DOSE_ug_repeated", "DOSE_(ug)_repeated", "DOSE_mg")
+dose_col <- intersect(dose_candidates, names(nca_data))
+if (length(dose_col) == 0) {
+  stop("Dose column not found. Check the NCA file's dose column name.")
+}
+dose_col <- dose_col[1]
+
+nca_extended <- nca_data |>
+  mutate(
+    Dose_mg = if (dose_col == "DOSE_mg") {
+      as.numeric(.data[[dose_col]])
+    } else {
+      as.numeric(.data[[dose_col]]) / 1000
+    }
+  )
+
+# Alternative column spellings are permitted, without changing units.
+parameter_candidates <- list(
+  "AUC0-inf"   = c("AUC0-inf (h.ug/ml)", "AUC0-inf (h.ug/mL)", "AUC0-inf"),
+  "AUC0-tlast" = c("AUC0-tlast (h.ug/ml)", "AUC0-tlast (h.ug/mL)", "AUC0-tlast"),
+  "CL/F"       = c("CL/F (mL/h)", "CL/F"),
+  "Clast"      = c("Clast (ug/mL)", "Clast (ug/ml)", "Clast"),
+  "Cmax"       = c("Cmax (ug/mL)", "Cmax (ug/ml)", "Cmax"),
+  "T1/2"       = c("T1/2 (h)", "T1/2"),
+  "Tlast"      = c("Tlast (h)", "Tlast"),
+  "Tmax"       = c("Tmax (h)", "Tmax"),
+  "Vd/F"       = c("Vd/F (mL)", "Vd/F"),
+  "kel"        = c("kel (1/h)", "kel")
+)
+
+first_existing <- function(candidates, col_names) {
+  hits <- candidates[candidates %in% col_names]
+  if (length(hits) == 0) NA_character_ else hits[1]
+}
+
+matched_cols <- vapply(
+  parameter_candidates, first_existing, character(1),
+  col_names = names(nca_extended)
+)
+required <- c("AUC0-inf", "AUC0-tlast", "CL/F", "Cmax", "T1/2", "Tmax", "Vd/F", "kel")
+missing_required <- intersect(required, names(matched_cols)[is.na(matched_cols)])
+if (length(missing_required) > 0) {
+  stop("NCA file is missing these expected PK parameters: ",
+       paste(missing_required, collapse = ", "))
+}
+missing_optional <- names(matched_cols)[is.na(matched_cols)]
+if (length(missing_optional) > 0) {
+  warning("Optional parameter(s) absent and not tabulated: ",
+          paste(missing_optional, collapse = ", "))
+}
+matched_cols <- matched_cols[!is.na(matched_cols)]
+
+nca_long_extended <- nca_extended |>
+  select(Dose_mg, all_of(unname(matched_cols))) |>
+  pivot_longer(
+    cols = all_of(unname(matched_cols)),
+    names_to = "Original_variable", values_to = "Value"
+  ) |>
+  mutate(
+    Parameter = names(matched_cols)[match(Original_variable, matched_cols)],
+    Value = as.numeric(Value)
+  )
+
+nca_dose_n <- nca_extended |> count(Dose_mg, name = "n_subjects")
+
+nca_dose_stats <- nca_long_extended |>
+  group_by(Dose_mg, Parameter) |>
+  summarise(
+    N = sum(is.finite(Value)),
+    Median = if (N > 0) median(Value, na.rm = TRUE) else NA_real_,
+    Q1 = if (N > 0) unname(quantile(Value, 0.25, na.rm = TRUE)) else NA_real_,
+    Q3 = if (N > 0) unname(quantile(Value, 0.75, na.rm = TRUE)) else NA_real_,
+    Mean = if (N > 0) mean(Value, na.rm = TRUE) else NA_real_,
+    SD = if (N > 1) sd(Value, na.rm = TRUE) else NA_real_,
+    .groups = "drop"
+  )
+
+# Helpers for automatically writing the accompanying interpretation.
+overall_stats <- nca_long_extended |>
+  group_by(Parameter) |>
+  summarise(
+    N = sum(is.finite(Value)),
+    Mean = mean(Value, na.rm = TRUE),
+    SD = sd(Value, na.rm = TRUE),
+    Median = median(Value, na.rm = TRUE),
+    Q1 = unname(quantile(Value, 0.25, na.rm = TRUE)),
+    Q3 = unname(quantile(Value, 0.75, na.rm = TRUE)),
+    .groups = "drop"
+  )
+
+get_overall <- function(parameter, field) {
+  overall_stats |> filter(Parameter == parameter) |> pull(all_of(field)) |> first()
+}
+get_dose_median <- function(parameter, dose_mg) {
+  nca_dose_stats |>
+    filter(Parameter == parameter, Dose_mg == dose_mg) |>
+    pull(Median) |> first()
+}
+fmt_num <- function(x) sprintf("%.2f", x)
+```
+
+```{r nca-ext-table-by-dose}
+#| echo: true
+#| results: asis
+
+parameter_order <- names(parameter_candidates)
+
+dose_display <- nca_dose_stats |>
+  left_join(nca_dose_n, by = "Dose_mg") |>
+  mutate(
+    `Dose group` = paste0(Dose_mg, " mg (n=", n_subjects, ")"),
+    `Median [Q1–Q3]` = sprintf("%.2f [%.2f – %.2f]", Median, Q1, Q3),
+    Parameter = factor(Parameter, levels = parameter_order)
+  ) |>
+  select(Parameter, `Dose group`, `Median [Q1–Q3]`) |>
+  pivot_wider(names_from = `Dose group`, values_from = `Median [Q1–Q3]`) |>
+  arrange(Parameter)
+
+knitr::kable(
+  dose_display,
+  caption = "Gajeevy NCA parameters by single oral dose: median [Q1–Q3]."
+)
+```
+
+
+The non-compartmental analysis of Gajeevy included 32 healthy volunteers receiving single oral doses of 10, 25, 50 or 100 mg. The results provide an initial understanding of the drug's absorption, exposure, distribution and elimination.
+
+**Absorption:** The median T~max~ is 2.00 h \[1.50–2.00\], indicating that Gajeevy generally reaches its highest plasma concentration approximately two hours after administration. This suggests a relatively early concentration peak, although the extent of oral bioavailability remains unknown.
+
+**Systemic exposure:** The mean C~max~ is 4.09 ± 3.18 µg/mL, while the mean AUC~0–inf~ is 117.18 ± 101.41 h·µg/mL. These values show considerable variability in drug exposure. However, because participants received different doses, part of this variability is expected to result from the study design. Comparing the four dose groups separately would help determine whether exposure increases proportionally with dose.
+
+**Elimination:** Gajeevy has a mean terminal half-life of 20.12 ± 6.51 h and a mean terminal elimination rate constant of 0.04 ± 0.01 h⁻¹. These findings indicate that plasma concentrations decline relatively slowly during the terminal phase. This could make once-daily administration worth investigating, but repeated-dose studies are needed to confirm whether effective concentrations can be maintained over 24 hours.
+
+**Clearance and distribution:** The mean apparent oral clearance is 436.38 ± 109.48 mL/h, and the mean apparent volume of distribution is 11.89 ± 2.52 L. Since absolute oral bioavailability is unknown, these parameters cannot be interpreted as the true clearance or volume of distribution of Gajeevy.
+
+**Reliability of exposure estimates:** The mean AUC~0–inf~ (117.18 h·µg/mL) is higher than the mean AUC~0–tlast~ (92.16 h·µg/mL). This difference indicates that part of the total exposure was estimated beyond the last measured concentration. The reliability of this estimation should be checked using individual extrapolated AUC percentages.
+
+
+### 3.4.1 Quantitative comparison: 50 mg group Gajeevy vs RCP
+
+```{r}
+#| label: rcp-50mg
+rcp_50 <- tribble(
+  ~Parameter,  ~`Observed values for 50 mg`, ~RCP,
+  "T1/2",      "17.96 h",                    "17.3 h",
+  "Tmax",      "2.00 h",                     "2.0 - 4 h",
+  "Cmax",      "4.73 µg/mL",                 "6.15 µg/mL",
+  "AUC0-inf",  "110.56 µg·h/mL",             "102 µg·h/mL"
+)
+kable(rcp_50)
+```
+
+### 3.4.2 Test 1: Relation between k~el~ and T~1/2~
+
+$$T_{1/2} = \frac{\ln 2}{k_{el}}$$
+
+```{r}
+#| label: test1
+kel_50 <- 0.04
+t_half <- log(2) / kel_50
+t_half
+```
+
+T~1/2~ = ln2 / 0.04 = **`r round(t_half, 1)` h**. This matches exactly with the T~1/2~ of the RCP (17.3 h). So, the k~el~ derived perfectly reproduces the official half-life of bictegravir.
+
+### 3.4.3 Test 2: Relation between CL/F and AUC
+
+$$CL/F = \frac{Dose}{AUC}$$
+
+```{r}
+#| label: test2
+dose_ug   <- 50000
+cl_gaj    <- dose_ug / 110.56
+cl_rcp    <- dose_ug / 102
+c(Gajeevy = cl_gaj, RCP = cl_rcp)
+```
+
+CL/F = 50000 µg / 110.56 = **`r round(cl_gaj, 2)` mL/h**.
+
+From the RCP, for the 50000 µg dose and AUC of 102 µg·h/mL, we have a CL/F of `r round(cl_rcp, 1)` mL/h.
+
+This still falls within the confidence for Gajeevy (335.10 - 516.94). So, this is also a solid validation for our derived parameters.
+
+### 3.4.5 Dose-Proportionality (Linearity) Assessment
+
+**Dose-normalized AUC calculation (from the table)**
+
+The multiple dose pharmacokinetics of bictegravir are dose proportional over the dose range of 25 to 100 mg. Dose proportionality helps predict drug exposure when the dose changes and is consistent with linear pharmacokinetics over the studied dose range. We can assess dose proportionality by comparing dose-normalized AUC values (AUC/dose) across groups.
+
+```{r}
+#| label: dose-prop
+dose_prop <- tibble(
+  Dose     = c(10, 25, 50, 100),
+  AUC0_inf = c(24.35, 57.34, 110.56, 264.12)
+) |>
+  mutate(`AUC/Dose (ratio)` = AUC0_inf / Dose,
+         Dose = paste(Dose, "mg")) |>
+  rename(`AUC0-inf` = AUC0_inf)
+
+kable(dose_prop, digits = 2)
+```
+
+**Interpretation:** The ratios remain within a relatively stable range (2.2 – 2.6). This is consistent with the RCP statement (dose-proportional linearity between 25 and 100 mg).
+
+### 3.4.6 Vd/F for the 50 mg group
+
+The Vd/F for Gajeevy is 10727.32 mL, which falls within the reference range (10,900 - 11,200 mL). This supports the structural validity of our derived parameter. [@ekobena_population_2025]
+
+## 4 Compartmental modelling
+
+### 4.1 CA Methodology
 
 **Aim**: Develop a preliminary compartmental model to describe the pharmacokinetics of Gajeevy following single-dose oral administration and compare alternative model structures.
 
@@ -1491,7 +1718,7 @@ combined_plot <- (p1 | p2)
 combined_plot
 ```
 
-### 3.4.1 Compartment selection and evaluation
+### 4.2 Compartment selection and evaluation
 
 ### Initial model selection
 
@@ -1571,7 +1798,7 @@ Observed versus individual predictions of concentration (µg/mL).
 Schematic representation of the one-compartment oral pharmacokinetic model with first-order absorption and elimination.
 :::
 
-### 3.4.2 Individual fits
+### 4.3 Individual fits
 
 The individual concentration–time profiles and their corresponding model fits for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-ca-individual-fits-1 through @fig-ca-individual-fits-8.
 
