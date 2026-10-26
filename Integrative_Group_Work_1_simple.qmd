@@ -11,6 +11,7 @@ author:
 institute: UCLouvain & KULeuven
 date: today
 bibliography: IW1.bib
+csl: nlm-citation-sequence-brackets.csl
 
 title-block-banner: "#73394f"
 code-links:
