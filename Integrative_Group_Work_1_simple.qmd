@@ -778,7 +778,135 @@ knitr::kable(
 ```
 :::
 
-## 3.3 Covariate Analysis of PK Parameters
+## 3.3 Comparison with single-dose bictegravir data
+
+**Aim:** place the Gajeevy NCA results in context by comparing them, dose by dose, with single-dose bictegravir data from the first-in-human study (GS-US-141-1218) [@8].
+
+**Data used:** Gajeevy values are the group medians [Q1–Q3] of the individual NCA results (n = 8 per dose). The bictegravir values are taken from the single-dose part of the published study (n = 6 per dose) and converted from ng to µg. The comparison is limited to the overlapping doses of 25, 50 and 100 mg, because the 10 mg dose was not studied for bictegravir.
+
+```{r}
+#| label: bic-cmp-prepare
+#| include: false
+
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(knitr)
+
+# ---- Gajeevy: individual NCA results -> median [Q1–Q3] per dose -------------
+nca_raw <- readxl::read_excel("Data/Data NCA.xlsx")
+
+nca_cmp <- nca_raw |>
+  transmute(
+    Dose_mg = as.numeric(DOSE_ug_repeated) / 1000,
+    Cmax    = as.numeric(`Cmax (ug/mL)`),
+    AUC     = as.numeric(`AUC0-inf (h.ug/ml)`),
+    Tmax    = as.numeric(`Tmax (h)`),
+    Thalf   = as.numeric(`T1/2 (h)`)
+  ) |>
+  filter(Dose_mg %in% c(25, 50, 100))
+
+gaj_stats <- nca_cmp |>
+  pivot_longer(-Dose_mg, names_to = "Parameter", values_to = "Value") |>
+  group_by(Dose_mg, Parameter) |>
+  summarise(
+    Median = median(Value, na.rm = TRUE),
+    Q1     = quantile(Value, 0.25, na.rm = TRUE, names = FALSE),
+    Q3     = quantile(Value, 0.75, na.rm = TRUE, names = FALSE),
+    .groups = "drop"
+  )
+
+shown  <- c("Cmax", "AUC", "Tmax", "Thalf")
+labels <- c("Cmax" = "Cmax (µg/mL)", "AUC" = "AUC0–inf (µg·h/mL)",
+            "Tmax" = "Tmax (h)", "Thalf" = "t½ (h)")
+
+gaj_fmt <- gaj_stats |>
+  transmute(Dose_mg, Parameter,
+            Gajeevy = sprintf("%.2f [%.2f–%.2f]", Median, Q1, Q3))
+
+# ---- Bictegravir: GS-US-141-1218 (single dose); Cmax and AUC converted ng -> µg
+bic_fmt <- tribble(
+  ~Dose_mg, ~Parameter, ~Bictegravir,
+  25,  "Cmax",  "1.62 (26.7)",
+  50,  "Cmax",  "3.97 (40.1)",
+  100, "Cmax",  "7.00 (36.1)",
+  25,  "AUC",   "35.72 (21.3)",
+  50,  "AUC",   "78.40 (29.7)",
+  100, "AUC",   "163.03 (24.3)",
+  25,  "Tmax",  "2.00 (1.00–3.00)",
+  50,  "Tmax",  "3.00 (1.50–4.00)",
+  100, "Tmax",  "2.25 (1.50–3.00)",
+  25,  "Thalf", "18.08 (16.63–19.64)",
+  50,  "Thalf", "16.72 (15.77–17.11)",
+  100, "Thalf", "18.90 (17.96–20.05)"
+)
+
+# One small table per dose
+cmp_table <- function(dose) {
+  gaj_fmt |>
+    filter(Dose_mg == dose) |>
+    left_join(bic_fmt, by = c("Dose_mg", "Parameter")) |>
+    mutate(Parameter = factor(Parameter, levels = shown)) |>
+    arrange(Parameter) |>
+    transmute(Parameter = unname(labels[as.character(Parameter)]),
+              `Gajeevy, median [Q1–Q3]` = Gajeevy,
+              `Bictegravir` = Bictegravir) |>
+    kable(align = "lcc")
+}
+
+# ---- Values for the text -----------------------------------------------------
+d <- c(25, 50, 100)
+med <- function(p) {
+  gaj_stats |> filter(Parameter == p) |> arrange(Dose_mg) |> pull(Median)
+}
+rng <- function(x, k = 1) {
+  r <- range(x)
+  sprintf(paste0("%.", k, "f–%.", k, "f"), r[1], r[2])
+}
+cmax_fold      <- med("Cmax") / c(1.6183, 3.9650, 6.9983)
+auc_fold       <- med("AUC")  / c(35.7182, 78.3995, 163.0282)
+auc_per_mg_gaj <- med("AUC")  / d
+auc_per_mg_bic <- c(35.7182, 78.3995, 163.0282) / d
+```
+
+### 3.3.1 Comparison per dose level
+
+The tables below show the Gajeevy NCA parameters next to the bictegravir values for each overlapping dose.
+
+::: panel-tabset
+## 25 mg
+
+````{r}
+#| label: tbl-bic-cmp-25
+#| echo: false
+#| tbl-cap: "25 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@8]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
+cmp_table(25)
+````
+
+## 50 mg
+
+````{r}
+#| label: tbl-bic-cmp-50
+#| echo: false
+#| tbl-cap: "50 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@8]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
+cmp_table(50)
+````
+
+## 100 mg
+
+````{r}
+#| label: tbl-bic-cmp-100
+#| echo: false
+#| tbl-cap: "100 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@8]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
+cmp_table(100)
+````
+:::
+
+### 3.3.2 Interpretation
+
+Comparison with single-dose bictegravir data from the first-in-human study [@8] (@tbl-bic-cmp-25, @tbl-bic-cmp-50 and @tbl-bic-cmp-100) showed a similar absorption and elimination profile for Gajeevy at 25–100 mg (median Tmax: `r rng(med("Tmax"), 2)` h vs. 2.00–3.00 h; terminal half-life: `r rng(med("Thalf"))` h vs. 16.7–18.9 h), while Gajeevy exhibited higher exposure (Cmax `r rng(cmax_fold)`-fold and AUC0–inf `r rng(auc_fold)`-fold that of bictegravir, suggesting lower apparent clearance) and consistent dose proportionality (`r rng(auc_per_mg_gaj, 2)` vs. `r rng(auc_per_mg_bic, 2)` µg·h/mL per mg). Overall, while these findings support the pharmacokinetic plausibility of the NCA results, they do not constitute formal validation due to differences in study populations, sample sizes, summary statistics (medians for Gajeevy vs. means for bictegravir Cmax and AUC0–inf), and unknown prandial conditions for the Gajeevy subjects compared to the fasted state of the bictegravir reference study.
+
+## 3.4 Covariate Analysis of PK Parameters
 
 To investigate potential relationships between patient characteristics and pharmacokinetic (PK) parameters, an exploratory covariate analysis was performed using individual parameters estimated from non-compartmental analysis (NCA).
 
@@ -955,7 +1083,7 @@ show_cor <- function(parameter) {
 }
 ```
 
-### 3.3.1 Spearman Correlation Analysis of Continuous Covariates
+### 3.4.1 Spearman Correlation Analysis of Continuous Covariates
 
 The following tables present Spearman's correlation coefficients (ρ) and corresponding p-values for each pharmacokinetic parameter and continuous covariate.
 
@@ -1010,7 +1138,7 @@ show_cor("Vd/F (mL)")
 ```
 :::
 
-### 3.3.2 Visualization of Continuous Covariate Relationships
+### 3.4.2 Visualization of Continuous Covariate Relationships
 
 Scatterplots were used to visualize the relationships between individual PK parameters and continuous patient covariates. Patients were colored according to their administered dose. Spearman's correlation coefficient (ρ) and the corresponding p-value are displayed for each relationship.
 
@@ -1152,7 +1280,7 @@ plot_pk_cov("Vd/F (mL)")
 ```
 :::
 
-### 3.3.3 Exploratory Analysis of Sex and Genetic Polymorphisms
+### 3.4.3 Exploratory Analysis of Sex and Genetic Polymorphisms
 
 The relationships between pharmacokinetic parameters and categorical patient covariates, including sex and genetic polymorphisms, were explored using boxplots. Individual observations were overlaid and colored according to the administered dose to visualize variability between groups.
 
@@ -1308,7 +1436,7 @@ plot_cat_cov("Vd/F (mL)")
 ```
 :::
 
-### 3.3.4 Summary of Covariate analysis
+### 3.4.4 Summary of Covariate analysis
 
 ```{r covariate-summary}
 #| echo: false
@@ -1373,231 +1501,6 @@ The exploratory analysis identified body weight and age as potential covariates 
 However, given the limited sample size (32 individuals), multiple comparisons, and possible influence of administered dose, these findings should be interpreted cautiously and do not establish causal relationships.
 
 The observed associations provide a basis for selecting candidate covariates for further evaluation in population pharmacokinetic modeling, where their effects can be investigated while accounting for other sources of variability.
-
-# 3.4 Comparison of Gajeevy and Bictegravir PK Parameters
-
-The individual non-compartmental analysis (NCA) results were summarized separately for each single-dose group. Values are reported as **median \[Q1–Q3\]**, using one NCA record per participant. The table is calculated from the original exported NCA data rather than manually transcribing the summary.
-
-```{r nca-ext-prepare}
-#| include: false
-library(readxl)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(knitr)
-
-# In the main dashboard, nca_data is already read in Section 3.2.
-# This fallback also allows this section to be reused elsewhere.
-if (!exists("nca_data")) {
-  nca_data <- readxl::read_excel("Data/Data NCA.xlsx")
-}
-
-# Existing NCA export uses DOSE_ug_repeated (micrograms).
-dose_candidates <- c("DOSE_ug_repeated", "DOSE_(ug)_repeated", "DOSE_mg")
-dose_col <- intersect(dose_candidates, names(nca_data))
-if (length(dose_col) == 0) {
-  stop("Dose column not found. Check the NCA file's dose column name.")
-}
-dose_col <- dose_col[1]
-
-nca_extended <- nca_data |>
-  mutate(
-    Dose_mg = if (dose_col == "DOSE_mg") {
-      as.numeric(.data[[dose_col]])
-    } else {
-      as.numeric(.data[[dose_col]]) / 1000
-    }
-  )
-
-# Alternative column spellings are permitted, without changing units.
-parameter_candidates <- list(
-  "AUC0-inf"   = c("AUC0-inf (h.ug/ml)", "AUC0-inf (h.ug/mL)", "AUC0-inf"),
-  "AUC0-tlast" = c("AUC0-tlast (h.ug/ml)", "AUC0-tlast (h.ug/mL)", "AUC0-tlast"),
-  "CL/F"       = c("CL/F (mL/h)", "CL/F"),
-  "Clast"      = c("Clast (ug/mL)", "Clast (ug/ml)", "Clast"),
-  "Cmax"       = c("Cmax (ug/mL)", "Cmax (ug/ml)", "Cmax"),
-  "T1/2"       = c("T1/2 (h)", "T1/2"),
-  "Tlast"      = c("Tlast (h)", "Tlast"),
-  "Tmax"       = c("Tmax (h)", "Tmax"),
-  "Vd/F"       = c("Vd/F (mL)", "Vd/F"),
-  "kel"        = c("kel (1/h)", "kel")
-)
-
-first_existing <- function(candidates, col_names) {
-  hits <- candidates[candidates %in% col_names]
-  if (length(hits) == 0) NA_character_ else hits[1]
-}
-
-matched_cols <- vapply(
-  parameter_candidates, first_existing, character(1),
-  col_names = names(nca_extended)
-)
-required <- c("AUC0-inf", "AUC0-tlast", "CL/F", "Cmax", "T1/2", "Tmax", "Vd/F", "kel")
-missing_required <- intersect(required, names(matched_cols)[is.na(matched_cols)])
-if (length(missing_required) > 0) {
-  stop("NCA file is missing these expected PK parameters: ",
-       paste(missing_required, collapse = ", "))
-}
-missing_optional <- names(matched_cols)[is.na(matched_cols)]
-if (length(missing_optional) > 0) {
-  warning("Optional parameter(s) absent and not tabulated: ",
-          paste(missing_optional, collapse = ", "))
-}
-matched_cols <- matched_cols[!is.na(matched_cols)]
-
-nca_long_extended <- nca_extended |>
-  select(Dose_mg, all_of(unname(matched_cols))) |>
-  pivot_longer(
-    cols = all_of(unname(matched_cols)),
-    names_to = "Original_variable", values_to = "Value"
-  ) |>
-  mutate(
-    Parameter = names(matched_cols)[match(Original_variable, matched_cols)],
-    Value = as.numeric(Value)
-  )
-
-nca_dose_n <- nca_extended |> count(Dose_mg, name = "n_subjects")
-
-nca_dose_stats <- nca_long_extended |>
-  group_by(Dose_mg, Parameter) |>
-  summarise(
-    N = sum(is.finite(Value)),
-    Median = if (N > 0) median(Value, na.rm = TRUE) else NA_real_,
-    Q1 = if (N > 0) unname(quantile(Value, 0.25, na.rm = TRUE)) else NA_real_,
-    Q3 = if (N > 0) unname(quantile(Value, 0.75, na.rm = TRUE)) else NA_real_,
-    Mean = if (N > 0) mean(Value, na.rm = TRUE) else NA_real_,
-    SD = if (N > 1) sd(Value, na.rm = TRUE) else NA_real_,
-    .groups = "drop"
-  )
-
-# Helpers for automatically writing the accompanying interpretation.
-overall_stats <- nca_long_extended |>
-  group_by(Parameter) |>
-  summarise(
-    N = sum(is.finite(Value)),
-    Mean = mean(Value, na.rm = TRUE),
-    SD = sd(Value, na.rm = TRUE),
-    Median = median(Value, na.rm = TRUE),
-    Q1 = unname(quantile(Value, 0.25, na.rm = TRUE)),
-    Q3 = unname(quantile(Value, 0.75, na.rm = TRUE)),
-    .groups = "drop"
-  )
-
-get_overall <- function(parameter, field) {
-  overall_stats |> filter(Parameter == parameter) |> pull(all_of(field)) |> first()
-}
-get_dose_median <- function(parameter, dose_mg) {
-  nca_dose_stats |>
-    filter(Parameter == parameter, Dose_mg == dose_mg) |>
-    pull(Median) |> first()
-}
-fmt_num <- function(x) sprintf("%.2f", x)
-```
-
-```{r nca-ext-table-by-dose}
-#| echo: true
-#| results: asis
-
-parameter_order <- names(parameter_candidates)
-
-dose_display <- nca_dose_stats |>
-  left_join(nca_dose_n, by = "Dose_mg") |>
-  mutate(
-    `Dose group` = paste0(Dose_mg, " mg (n=", n_subjects, ")"),
-    `Median [Q1–Q3]` = sprintf("%.2f [%.2f – %.2f]", Median, Q1, Q3),
-    Parameter = factor(Parameter, levels = parameter_order)
-  ) |>
-  select(Parameter, `Dose group`, `Median [Q1–Q3]`) |>
-  pivot_wider(names_from = `Dose group`, values_from = `Median [Q1–Q3]`) |>
-  arrange(Parameter)
-
-knitr::kable(
-  dose_display,
-  caption = "Gajeevy NCA parameters by single oral dose: median [Q1–Q3]."
-)
-```
-
-The non-compartmental analysis of Gajeevy included 32 healthy volunteers receiving single oral doses of 10, 25, 50 or 100 mg. The results provide an initial understanding of the drug's absorption, exposure, distribution and elimination.
-
-**Absorption:** The median T~max~ is 2.00 h \[1.50–2.00\], indicating that Gajeevy generally reaches its highest plasma concentration approximately two hours after administration. This suggests a relatively early concentration peak, although the extent of oral bioavailability remains unknown.
-
-**Systemic exposure:** The mean C~max~ is 4.09 ± 3.18 µg/mL, while the mean AUC~0–inf~ is 117.18 ± 101.41 h·µg/mL. These values show considerable variability in drug exposure. However, because participants received different doses, part of this variability is expected to result from the study design. Comparing the four dose groups separately would help determine whether exposure increases proportionally with dose.
-
-**Elimination:** Gajeevy has a mean terminal half-life of 20.12 ± 6.51 h and a mean terminal elimination rate constant of 0.04 ± 0.01 h⁻¹. These findings indicate that plasma concentrations decline relatively slowly during the terminal phase. This could make once-daily administration worth investigating, but repeated-dose studies are needed to confirm whether effective concentrations can be maintained over 24 hours.
-
-**Clearance and distribution:** The mean apparent oral clearance is 436.38 ± 109.48 mL/h, and the mean apparent volume of distribution is 11.89 ± 2.52 L. Since absolute oral bioavailability is unknown, these parameters cannot be interpreted as the true clearance or volume of distribution of Gajeevy.
-
-**Reliability of exposure estimates:** The mean AUC~0–inf~ (117.18 h·µg/mL) is higher than the mean AUC~0–tlast~ (92.16 h·µg/mL). This difference indicates that part of the total exposure was estimated beyond the last measured concentration. The reliability of this estimation should be checked using individual extrapolated AUC percentages.
-
-### 3.4.1 Quantitative comparison: 50 mg group Gajeevy vs RCP
-
-```{r}
-#| label: rcp-50mg
-rcp_50 <- tribble(
-  ~Parameter,  ~`Observed values for 50 mg`, ~RCP,
-  "T1/2",      "17.96 h",                    "17.3 h",
-  "Tmax",      "2.00 h",                     "2.0 - 4 h",
-  "Cmax",      "4.73 µg/mL",                 "6.15 µg/mL",
-  "AUC0-inf",  "110.56 µg·h/mL",             "102 µg·h/mL"
-)
-kable(rcp_50)
-```
-
-### 3.4.2 Test 1: Relation between k~el~ and T~1/2~
-
-$$T_{1/2} = \frac{\ln 2}{k_{el}}$$
-
-```{r}
-#| label: test1
-kel_50 <- 0.04
-t_half <- log(2) / kel_50
-t_half
-```
-
-T~1/2~ = ln2 / 0.04 = **`r round(t_half, 1)` h**. This matches exactly with the T~1/2~ of the RCP (17.3 h). So, the k~el~ derived perfectly reproduces the official half-life of bictegravir.
-
-### 3.4.3 Test 2: Relation between CL/F and AUC
-
-$$CL/F = \frac{Dose}{AUC}$$
-
-```{r}
-#| label: test2
-dose_ug   <- 50000
-cl_gaj    <- dose_ug / 110.56
-cl_rcp    <- dose_ug / 102
-c(Gajeevy = cl_gaj, RCP = cl_rcp)
-```
-
-CL/F = 50000 µg / 110.56 = **`r round(cl_gaj, 2)` mL/h**.
-
-From the RCP, for the 50000 µg dose and AUC of 102 µg·h/mL, we have a CL/F of `r round(cl_rcp, 1)` mL/h.
-
-This still falls within the confidence for Gajeevy (335.10 - 516.94). So, this is also a solid validation for our derived parameters.
-
-### 3.4.5 Dose-Proportionality (Linearity) Assessment
-
-**Dose-normalized AUC calculation (from the table)**
-
-The multiple dose pharmacokinetics of bictegravir are dose proportional over the dose range of 25 to 100 mg. Dose proportionality helps predict drug exposure when the dose changes and is consistent with linear pharmacokinetics over the studied dose range. We can assess dose proportionality by comparing dose-normalized AUC values (AUC/dose) across groups.
-
-```{r}
-#| label: dose-prop
-dose_prop <- tibble(
-  Dose     = c(10, 25, 50, 100),
-  AUC0_inf = c(24.35, 57.34, 110.56, 264.12)
-) |>
-  mutate(`AUC/Dose (ratio)` = AUC0_inf / Dose,
-         Dose = paste(Dose, "mg")) |>
-  rename(`AUC0-inf` = AUC0_inf)
-
-kable(dose_prop, digits = 2)
-```
-
-**Interpretation:** The ratios remain within a relatively stable range (2.2 – 2.6). This is consistent with the RCP statement (dose-proportional linearity between 25 and 100 mg).
-
-### 3.4.6 Vd/F for the 50 mg group
-
-The Vd/F for Gajeevy is 10727.32 mL, which falls within the reference range (10,900 - 11,200 mL). This supports the structural validity of our derived parameter. [@ekobena_population_2025]
 
 ## 4 Compartmental modelling
 
@@ -1870,321 +1773,3 @@ Record the software and package versions used to produce the report.
 #| label: session-info
 sessionInfo()
 ```
-
-### Comparison with Published Bictegravir Pharmacokinetics
-
-Gajeevy pharmacokinetic estimates were compared descriptively with bictegravir results from **Gallant et al. (2017)** and **Ekobena et al. (2025)**. The table uses Gajeevy NCA results calculated from the individual data: **50 mg group medians** for T~max~ and terminal half-life, and **overall means** for apparent clearance and volume.
-
-```{r brief-pk-literature-comparison}
-#| echo: false
-#| message: false
-#| warning: false
-
-library(dplyr)
-library(knitr)
-
-# Uses the nca_data object created in the NCA section.
-# Uncomment the next line if using this as a standalone section:
-# nca_data <- readxl::read_excel("Data/Data NCA.xlsx")
-
-nca_comparison <- nca_data |>
-  mutate(Dose_mg = as.numeric(DOSE_ug_repeated) / 1000)
-
-nca_50 <- nca_comparison |>
-  filter(Dose_mg == 50)
-
-if (nrow(nca_50) == 0) stop("No participants found in the 50 mg group.")
-
-comparison <- data.frame(
-  Parameter = c(
-    "Tmax, 50 mg (h)",
-    "Terminal half-life, 50 mg (h)",
-    "Apparent clearance, all doses (L/h)",
-    "Apparent volume, all doses (L)"
-  ),
-  Gajeevy = c(
-    sprintf("%.2f (median)", median(nca_50$`Tmax (h)`, na.rm = TRUE)),
-    sprintf("%.2f (median)", median(nca_50$`T1/2 (h)`, na.rm = TRUE)),
-    sprintf("%.3f (mean)", mean(nca_comparison$`CL/F (mL/h)`, na.rm = TRUE) / 1000),
-    sprintf("%.2f (mean)", mean(nca_comparison$`Vd/F (mL)`, na.rm = TRUE) / 1000)
-  ),
-  Bictegravir = c(
-    "1.8 (median)",
-    "17.8 (median)",
-    "0.46 (typical model estimate)",
-    "10.9 (typical model estimate)"
-  ),
-  Source = c(
-    "Gallant 2017, Table 3",
-    "Gallant 2017, Table 3",
-    "Ekobena 2025, Table 2",
-    "Ekobena 2025, Table 2"
-  ),
-  check.names = FALSE
-)
-
-knitr::kable(
-  comparison,
-  caption = "Descriptive comparison of Gajeevy NCA and published bictegravir PK estimates."
-)
-```
-
-Gajeevy showed a similar time to peak concentration and terminal half-life to published bictegravir results. Apparent clearance and volume were also of a similar order of magnitude. However, **Gallant et al.** reported values after repeated daily dosing in adults with HIV, whereas **Ekobena et al.** reported population-model estimates from steady-state data. Gajeevy was studied after a **single dose in healthy volunteers**. Consequently, these comparisons provide PK context but **do not establish equivalence**; single-dose AUC~0–inf~ was not compared directly with steady-state AUC~tau~.
-
-**References:** [Gallant et al. (2017)](https://doi.org/10.1097/QAI.0000000000001306); [Ekobena et al. (2025)](https://doi.org/10.1093/jac/dkaf297).
-
-
-
-## 3.4 Comparison with Published Bictegravir Pharmacokinetics
-
-The single-dose pharmacokinetics of **Gajeevy** (32 healthy volunteers; 10, 25, 50, and 100 mg, eight participants per dose) were compared descriptively with two bictegravir studies. **Gallant et al. (2017)** reported pharmacokinetics after 10 days of once-daily bictegravir in adults with HIV, whereas **Ekobena et al. (2025)** developed a population pharmacokinetic model using real-world steady-state samples. These publications provide useful context, but their values are not directly interchangeable with single-dose NCA estimates.
-
-```{r gajeevy-bictegravir-medium-prepare}
-#| include: false
-
-library(dplyr)
-library(knitr)
-
-# Reuse the individual NCA dataset loaded earlier in the main Quarto report.
-# If this is a standalone document, uncomment the following line:
-# nca_data <- readxl::read_excel("Data/Data NCA.xlsx")
-
-needed_cols <- c(
-  "DOSE_ug_repeated", "Tmax (h)", "T1/2 (h)",
-  "Cmax (ug/mL)", "AUC0-inf (h.ug/ml)",
-  "CL/F (mL/h)", "Vd/F (mL)"
-)
-missing_cols <- setdiff(needed_cols, names(nca_data))
-if (length(missing_cols) > 0) {
-  stop("Missing NCA column(s): ", paste(missing_cols, collapse = ", "))
-}
-
-nca_lit_medium <- nca_data |>
-  transmute(
-    Dose_mg = as.numeric(DOSE_ug_repeated) / 1000,
-    Tmax_h = as.numeric(`Tmax (h)`),
-    Half_life_h = as.numeric(`T1/2 (h)`),
-    Cmax_ug_mL = as.numeric(`Cmax (ug/mL)`),
-    AUC_inf = as.numeric(`AUC0-inf (h.ug/ml)`),
-    CL_L_h = as.numeric(`CL/F (mL/h)`) / 1000,
-    Vd_L = as.numeric(`Vd/F (mL)`) / 1000
-  ) |>
-  mutate(AUC_per_mg = if_else(Dose_mg > 0, AUC_inf / Dose_mg, NA_real_))
-
-id_col <- intersect(c("id", "ID"), names(nca_data))
-if (length(id_col) > 0 && anyDuplicated(nca_data[[id_col[1]]]) > 0) {
-  stop("Expected one NCA row per participant; duplicate IDs found.")
-}
-
-nca_lit_by_dose <- nca_lit_medium |>
-  group_by(Dose_mg) |>
-  summarise(
-    N = n(),
-    Tmax = median(Tmax_h, na.rm = TRUE),
-    Half_life = median(Half_life_h, na.rm = TRUE),
-    Cmax = median(Cmax_ug_mL, na.rm = TRUE),
-    AUC_inf = median(AUC_inf, na.rm = TRUE),
-    AUC_per_mg = median(AUC_per_mg, na.rm = TRUE),
-    .groups = "drop"
-  )
-```
-
-### 3.4.1 Absorption and terminal elimination
-
-To compare parameters reported using similar summary statistics, the Gajeevy group **medians** for time to peak concentration (T~max~) and terminal half-life were placed alongside the **Day 10 medians** from Gallant et al. (2017, Table 3). The 10 mg Gajeevy group was not paired with a bictegravir group because that paper studied 5 mg rather than 10 mg.
-
-```{r gajeevy-bictegravir-medium-timing-table}
-#| echo: false
-#| results: asis
-
-# Gallant et al. (2017), Table 3: bictegravir DAY-10 steady-state medians.
-gallant_day10_medians <- tibble::tibble(
-  Dose_mg = c(25, 50, 100),
-  Bictegravir_Tmax_h = c(1.3, 1.8, 2.7),
-  Bictegravir_half_life_h = c(15.9, 17.8, 20.9)
-)
-
-nca_lit_by_dose |>
-  inner_join(gallant_day10_medians, by = "Dose_mg") |>
-  transmute(
-    `Dose (mg)` = Dose_mg,
-    `Gajeevy Tmax (h)` = sprintf("%.2f", Tmax),
-    `Bictegravir Tmax (h)` = sprintf("%.2f", Bictegravir_Tmax_h),
-    `Gajeevy half-life (h)` = sprintf("%.2f", Half_life),
-    `Bictegravir half-life (h)` = sprintf("%.2f", Bictegravir_half_life_h)
-  ) |>
-  knitr::kable(
-    caption = "Gajeevy single-dose and bictegravir Day 10 steady-state medians; bictegravir values: Gallant et al. (2017), Table 3."
-  ) |>
-  print()
-```
-
-Overall, the time to peak concentration and terminal half-life were on a similar timescale for both drugs. At 50 mg, for example, Gajeevy had a median T~max~ of **`r sprintf('%.2f', nca_lit_by_dose$Tmax[nca_lit_by_dose$Dose_mg == 50])` h** and half-life of **`r sprintf('%.2f', nca_lit_by_dose$Half_life[nca_lit_by_dose$Dose_mg == 50])` h**, compared with **1.8 h** and **17.8 h** for bictegravir. Nevertheless, the bictegravir figures were obtained after repeated dosing in people with HIV, not after one dose in healthy volunteers. Moreover, Gallant et al. followed terminal concentrations substantially longer (up to 168 hours after the last dose) than the 48-hour Gajeevy sampling window, which limits half-life comparability.
-
-### 3.4.2 Gajeevy exposure across dose levels
-
-Peak concentration (C~max~) and total exposure (AUC~0–∞~) were summarized **within the Gajeevy study**. Dose-normalized AUC was calculated for each participant before obtaining the group median to explore approximate dose proportionality.
-
-```{r gajeevy-bictegravir-medium-exposure-table}
-#| echo: false
-#| results: asis
-
-nca_lit_by_dose |>
-  transmute(
-    `Dose (mg)` = Dose_mg,
-    N,
-    `Cmax (µg/mL)` = sprintf("%.2f", Cmax),
-    `AUC0–∞ (h·µg/mL)` = sprintf("%.2f", AUC_inf),
-    `AUC0–∞/dose` = sprintf("%.2f", AUC_per_mg)
-  ) |>
-  knitr::kable(
-    caption = "Gajeevy single-dose exposure by dose group (medians; AUC/dose units: (h·µg/mL)/mg)."
-  ) |>
-  print()
-```
-
-Increasing dose was accompanied by higher exposure, and the dose-normalized AUC summaries allow a preliminary assessment of proportionality. These observations are **descriptive** and do not replace a formal dose-proportionality analysis. We do **not** directly compare Gajeevy single-dose AUC~0–∞~ with the bictegravir **steady-state AUC~τ~** reported by Gallant et al., because they represent different exposure intervals and dosing conditions.
-
-### 3.4.3 Apparent clearance and volume of distribution
-
-The overall Gajeevy NCA means were also compared with the typical population-model estimates reported by Ekobena et al. (2025). Units were harmonized to L/h and L.
-
-```{r gajeevy-bictegravir-medium-disposition-table}
-#| echo: false
-#| results: asis
-
-comparison_disposition <- tibble::tibble(
-  Parameter = c("Apparent clearance (L/h)", "Apparent volume (L)"),
-  `Gajeevy (NCA mean)` = c(
-    sprintf("%.3f", mean(nca_lit_medium$CL_L_h, na.rm = TRUE)),
-    sprintf("%.2f", mean(nca_lit_medium$Vd_L, na.rm = TRUE))
-  ),
-  `Bictegravir (population model)` = c("0.46", "10.9")
-)
-knitr::kable(
-  comparison_disposition,
-  caption = "Gajeevy overall NCA means versus typical population PK estimates for bictegravir (Ekobena et al., 2025, Table 2)."
-)
-```
-
-Both drugs showed apparent clearance and volume estimates of broadly comparable magnitude. However, the bictegravir values are **model-based typical values** from steady-state data, whereas the Gajeevy values are **means of individual NCA estimates**. In particular, the NCA terminal apparent volume (V~z~/F) and one-compartment population-model volume are not strictly equivalent measures. Ekobena et al. also found that older age was associated with lower apparent clearance, consistent in direction with our exploratory Gajeevy age–CL/F correlation (ρ = −0.52); this is supportive context, not independent confirmation.
-
-### 3.4.4 Overall interpretation
-
-The comparison suggests that Gajeevy and bictegravir share broadly similar **absorption timing and terminal elimination characteristics**, while their apparent clearance and distribution estimates are of a similar order of magnitude. This supports the *pharmacokinetic plausibility* of the exploratory Gajeevy results, but **does not validate the NCA estimates or establish pharmacokinetic equivalence**. Differences in study population, single- versus multiple-dose conditions, and methods of estimation should be considered when interpreting these comparisons.
-
-**Literature references:**
-
-- Gallant JE et al. *Antiviral Activity, Safety, and Pharmacokinetics of Bictegravir as 10-Day Monotherapy in HIV-1–Infected Adults.* J Acquir Immune Defic Syndr. 2017;75:61–66. [DOI: 10.1097/QAI.0000000000001306](https://doi.org/10.1097/QAI.0000000000001306).
-- Ekobena P et al. *Population pharmacokinetics of bictegravir in real-world people with HIV.* J Antimicrob Chemother. 2025;80:2782–2789. [DOI: 10.1093/jac/dkaf297](https://doi.org/10.1093/jac/dkaf297).
-
-Claude:
-
-## 3.5 Comparison with single-dose bictegravir data
-
-::: section-card
-**Aim:** place the Gajeevy NCA results in context by comparing them, dose by dose, with single-dose bictegravir data from the first-in-human study (GS-US-141-1218) [@10].
-
-**Data used:** Gajeevy values are the group medians [Q1–Q3] of the individual NCA results (n = 8 per dose). The bictegravir values are taken from the single-dose part of the published study (n = 6 per dose) and converted from ng to µg. The comparison is limited to the overlapping doses of 25, 50 and 100 mg, because the 10 mg dose was not studied for bictegravir.
-:::
-
-````{r}
-#| label: bic-cmp-prepare
-#| include: false
-
-shown  <- c("Cmax", "AUC0-inf", "Tmax", "T1/2")
-labels <- c("Cmax" = "Cmax (µg/mL)", "AUC0-inf" = "AUC0–inf (µg·h/mL)",
-            "Tmax" = "Tmax (h)", "T1/2" = "t½ (h)")
-
-# Gajeevy: median [Q1–Q3] per dose (nca_dose_stats is created in section 3.4)
-gaj_fmt <- nca_dose_stats |>
-  filter(Dose_mg %in% c(25, 50, 100), Parameter %in% shown) |>
-  transmute(Dose_mg, Parameter,
-            Gajeevy = sprintf("%.2f [%.2f–%.2f]", Median, Q1, Q3))
-
-# Bictegravir: GS-US-141-1218 (single dose); Cmax and AUC converted from ng to µg
-bic_fmt <- tribble(
-  ~Dose_mg, ~Parameter,  ~Bictegravir,
-  25,  "Cmax",     "1.62 (26.7)",
-  50,  "Cmax",     "3.97 (40.1)",
-  100, "Cmax",     "7.00 (36.1)",
-  25,  "AUC0-inf", "35.72 (21.3)",
-  50,  "AUC0-inf", "78.40 (29.7)",
-  100, "AUC0-inf", "163.03 (24.3)",
-  25,  "Tmax",     "2.00 (1.00–3.00)",
-  50,  "Tmax",     "3.00 (1.50–4.00)",
-  100, "Tmax",     "2.25 (1.50–3.00)",
-  25,  "T1/2",     "18.08 (16.63–19.64)",
-  50,  "T1/2",     "16.72 (15.77–17.11)",
-  100, "T1/2",     "18.90 (17.96–20.05)"
-)
-
-# One small table per dose
-cmp_table <- function(dose) {
-  gaj_fmt |>
-    filter(Dose_mg == dose) |>
-    left_join(bic_fmt, by = c("Dose_mg", "Parameter")) |>
-    mutate(Parameter = factor(Parameter, levels = shown)) |>
-    arrange(Parameter) |>
-    transmute(Parameter = unname(labels[as.character(Parameter)]),
-              `Gajeevy, median [Q1–Q3]` = Gajeevy,
-              `Bictegravir` = Bictegravir) |>
-    kable(align = "lcc")
-}
-
-# Values for the text
-d <- c(25, 50, 100)
-g <- function(p) sapply(d, function(x) get_dose_median(p, x))
-rng <- function(x, k = 1) { r <- range(x); sprintf(paste0("%.", k, "f–%.", k, "f"), r[1], r[2]) }
-cmax_fold      <- g("Cmax")     / c(1.6183, 3.9650, 6.9983)
-auc_fold       <- g("AUC0-inf") / c(35.7182, 78.3995, 163.0282)
-auc_per_mg_gaj <- g("AUC0-inf") / d
-auc_per_mg_bic <- c(35.7182, 78.3995, 163.0282) / d
-````
-
-### 3.5.1 Comparison per dose level
-
-The tables below show the Gajeevy NCA parameters next to the bictegravir values for each overlapping dose.
-
-::: panel-tabset
-## 25 mg
-
-````{r}
-#| label: tbl-bic-cmp-25
-#| echo: false
-#| tbl-cap: "25 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@10]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
-cmp_table(25)
-````
-
-## 50 mg
-
-````{r}
-#| label: tbl-bic-cmp-50
-#| echo: false
-#| tbl-cap: "50 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@10]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
-cmp_table(50)
-````
-
-## 100 mg
-
-````{r}
-#| label: tbl-bic-cmp-100
-#| echo: false
-#| tbl-cap: "100 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@10]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
-cmp_table(100)
-````
-:::
-
-### 3.5.2 Interpretation
-
-::: section-card
-Comparison with single-dose bictegravir data from the first-in-human study [@10] (@tbl-bic-cmp-25, @tbl-bic-cmp-50 and @tbl-bic-cmp-100) showed a similar absorption and elimination profile for Gajeevy at 25–100 mg: median Tmax was `r rng(g("Tmax"), 2)` h versus 2.00–3.00 h, and terminal half-life `r rng(g("T1/2"))` h versus 16.7–18.9 h. Gajeevy exposure was higher, with Cmax `r rng(cmax_fold)`-fold and AUC0–inf `r rng(auc_fold)`-fold that of bictegravir, which with a similar half-life suggests a lower apparent clearance. Dose-normalised AUC0–inf remained relatively stable for both drugs (`r rng(auc_per_mg_gaj, 2)` versus `r rng(auc_per_mg_bic, 2)` µg·h/mL per mg), suggesting approximate dose proportionality over this range.
-:::
-
-### 3.5.3 Conclusion
-
-::: section-card
-Overall, these comparisons support the pharmacokinetic plausibility of the NCA findings but do not constitute formal validation, given differences in study populations, sample sizes and summary statistics (medians for Gajeevy versus means for bictegravir Cmax and AUC0–inf).
-:::
-````
-````
