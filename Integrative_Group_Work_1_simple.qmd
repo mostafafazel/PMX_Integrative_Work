@@ -9,7 +9,7 @@ author:
   - "Seyed Mostafa Fazel Hosein"
 
 institute: UCLouvain & KULeuven
-date: October 26, 2026
+date: today
 bibliography: IW1.bib
 
 title-block-banner: "#73394f"
@@ -156,6 +156,8 @@ pa_data_backup <- pa_data
 
 ```
 
+For readability, code is not displayed in every section; however, all code remains available in the Quarto source file for full reproducibility.
+
 # Study overview {.unlisted}
 
 ::: section-card
@@ -179,45 +181,41 @@ The overarching objective of this integrative group work is to bridge clinical p
 ## 1.1 Literature review
 
 ::: section-card
-Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome. [@biktarvy2018] Combination antiretroviral therapy (cART) can suppress viral replication to undetectable levels, preserve immune function, and prevent disease progression; however, it cannot eradicate HIV from the body. [@biktarvy2018- @ekobena_population_2025]
+Bictegravir (ATC code: J05AR20) is an integrase strand transfer inhibitor (INSTI) used in HIV treatment. It inhibits HIV integrase, preventing viral DNA integration into the host genome (1, 2). Although bictegravir exhibits potent antiviral activity on its own, it is administered as a fixed-dose combination with emtricitabine and tenofovir alafenamide, both nucleos(t)ide reverse transcriptase inhibitors (NRTIs) (Biktarvy) (1, 2). Combination antiretroviral therapy (cART) is essential, as HIV can rapidly develop resistance when a single antiretroviral drug is used alone, due to the virus's ability to mutate and generate resistant variants (3). By targeting different stages of viral replication, cART can suppress viral replication to undetectable levels, preserve immune function and prevent disease progression, but does not eradicate HIV from the body (3, 4). 
 
-Bictegravir is marketed in a once-daily fixed-dose combination with emtricitabine and tenofovir alafenamide, both reverse transcriptase inhibitors. It exhibits potent antiviral activity against HIV-1 (EC50 \<0.05–6.6 nM), with a protein-adjusted EC95 of 361 nM (0.162 µg/mL) for wild-type HIV-1, and is also active against HIV-2. A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) was associated with adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established. No upper limit has been defined due to the lack of significant dose-dependent toxicity. [@hivtrea- @subramanian_human_2022]
+Bictegravir has a high genetic barrier to resistance. No treatment-emergent resistance was identified in 11 patients analysed through 144 weeks, although in vitro mutations M50I and R263K reduced susceptibility by 1.3-fold and 2.2-fold, respectively (1). 
 
-Bictegravir is classified as a Biopharmaceutics Classification System (BCS) class II drug [@kandi_clinical_2023], characterised by low solubility and high permeability. Its estimated oral bioavailability exceeds 61%, with dose linearity reported between 25 and 100 mg. Peak plasma concentrations are reached within 2–4 hours, and food (moderate‑fat or high‑fat meal) increases AUC by approximately 24% compared to fasted state, without a clinically relevant effect.
+Biktarvy effectively suppresses HIV replication. At week 48, 89–92% of previously untreated adults achieved HIV-1 RNA levels below 50 copies/mL, while viral suppression below this threshold was maintained in 98% (49/50) of adolescents who switched to Biktarvy (1). Bictegravir alone exhibits potent antiviral activity against HIV-1 (EC50: <0.05–6.6 nM) and HIV-2. Its protein-adjusted EC95 against wild-type HIV-1 is 361 nM (0.162 µg/mL) (1, 2). A trough concentration of 760 ng/mL (inhibitory quotient = 4.7) has been proposed as a reference threshold for adequate virological suppression in Phase III trials, although no clinically validated exposure target has been established (2). Similarly, no clinically validated upper exposure limit has been established. Bictegravir has a generally favourable safety profile, with the most frequently reported adverse effects being headache (5%), diarrhoea (5%) and nausea (4%) (1). 
 
-Bictegravir exhibits extensive plasma protein binding (\>99%), with an unbound fraction of approximately 0.25% in vitro. It is primarily metabolised by CYP3A and UGT1A1. Approximately 60.5% of a radiolabelled dose is recovered in feces and 35% in urine, predominantly as metabolites; only 1.3% is excreted unchanged in urine. Renal impairment is therefore not expected to substantially affect exposure. Bictegravir is also a substrate of P-glycoprotein (P-gp) and BCRP and has a plasma elimination half-life of approximately 17.3 hours.
+Bictegravir is classified as a Biopharmaceutics Classification System (BCS) class II drug, characterised by low solubility and high permeability (2, 5). Its estimated oral bioavailability exceeds 61%, with dose linearity reported between 25 and 100 mg. Peak plasma concentrations are reached within 2–4 hours, and a moderate- or high-fat meal increases AUC by approximately 24% compared with the fasted state, without a clinically relevant effect (2). Bictegravir exhibits extensive plasma protein binding (>99%), with an unbound fraction of approximately 0.25% in vitro. It is primarily metabolised by CYP3A and UGT1A1 (2). Approximately 60.5% of a radiolabelled dose is recovered in faeces and 35% in urine, predominantly as metabolites; only 1.3% is excreted unchanged in urine (2). Renal excretion of unchanged bictegravir is therefore a minor elimination pathway. Bictegravir is also a substrate of P-glycoprotein (P-gp) and breast cancer resistance protein (BCRP) and has a plasma elimination half-life of approximately 17.3 hours (2). 
 :::
 
 ## 1.2 Drug development context
 
 ::: section-card
-The dataset originates from a Phase 1a single ascending dose (SAD) study investigating Gajeevy, an investigational drug with structural and mechanistic similarities to bictegravir. The study was designed as a four-arm, parallel-group study with oral administration.
+The dataset originates from a Phase 1a single ascending dose (SAD) study investigating Gajeevy, an investigational drug with structural and mechanistic similarities to bictegravir. The study was designed as a four-arm, parallel-group study with oral administration. A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg. The primary objectives were to assess safety and tolerability and, where applicable, explore the maximum tolerated dose (6). Secondary objectives included characterising the pharmacokinetic and pharmacodynamic properties of Gajeevy (6). The findings will inform dose selection for Phase II trials, which investigate preliminary efficacy, dose–response relationships and safety in patients (6). Phase III trials subsequently evaluate the drug’s safety and efficacy in larger patient populations to confirm its benefit–risk profile before regulatory approval and market authorisation (6). 
 
-A total of 32 healthy volunteers received single doses ranging from 10 to 100 mg. The primary objectives were to assess safety and tolerability and, where applicable, explore the maximum tolerated dose. Secondary objectives included characterising the pharmacokinetic and pharmacodynamic properties of Gajeevy. The findings will inform dose selection for subsequent Phase II trials in patients and guide further clinical development. Phase III trials then evaluate the drug’s safety and efficacy in larger patient populations before regulatory approval and market authorisation. [@holt_bictegravir_2024]
+The main objective of this research was to clean and explore the dataset, followed by an exploratory pharmacokinetic analysis of the drug. 
 :::
 
 ## 1.3 Main pharmacokinetic challenges
 
 ::: section-card
-- Metabolic drug–drug interactions : Bictegravir is metabolised by both CYP3A and UGT1A1, making its exposure sensitive to enzyme induction or inhibition. For example, rifampicin decreases bictegravir AUC by approximately 75%, potentially compromising antiviral efficacy. [@ekobena_population_2025]
+- The co-administration of bictegravir with divalent cations (e.g., magnesium, iron, calcium and zinc) can significantly reduce its bioavailability (2). 
 
-- Absorption interactions with polyvalent cations : Chelation with magnesium, aluminium, iron or calcium can substantially reduce oral absorption. Simultaneous administration with magnesium/aluminium-containing antacids under fasting conditions decreases bictegravir AUC by approximately 79%, requiring careful administration timing. [@ekobena_population_2025]
+- As a result of co-administration with potent dual inhibitors or inducers of CYP3A4 and UGT1A1 (e.g., atazanavir, a protease inhibitor), clinically significant drug-drug interactions (DDI) are expected (2). 
 
-- High plasma protein binding : Bictegravir is highly bound to plasma proteins, limiting its removal by dialysis and complicating the management of excessive exposure or overdose. [@noauthor_biktarvy_2018]
+- Pregnancy alters bictegravir pharmacokinetics. Despite evidence supporting its use during pregnancy, data on safety during breastfeeding and effects on infants remain limited (1, 7). 
 
-- Pharmacokinetic changes in special populations : Bictegravir exposure is reduced during pregnancy, potentially affecting antiviral coverage. Severe hepatic impairment has not been adequately studied, creating uncertainty regarding exposure and appropriate use in this population. [@holt_bictegravir_2024]
+- Bictegravir pharmacokinetics in adults aged 65 years and older remain insufficiently characterised, despite no clinically relevant age effect on exposure being identified in population pharmacokinetic analyses (1). 
 :::
 
 ## 1.4 Main pharmacodynamic challenges
 
 ::: section-card
-- Dependence on integrase inhibition: Bictegravir inhibits the HIV integrase strand-transfer step, preventing viral DNA integration. Sustained antiviral activity requires sufficient inhibition of this essential replication process. [@ekobena_population_2025]
+- As mentioned above, no clinically validated exposure target has been established due to the absence of a clear exposure–response relationship. The proposed threshold of 760 ng/mL is based on theoretical considerations and clinical observations (2).
 
-- Development of viral resistance: Mutations in the HIV integrase gene, including R263K and combinations involving Q148H/K/R, may reduce viral susceptibility to bictegravir and compromise treatment effectiveness. [@noauthor_hiv_nodate]
-
-- Balancing efficacy and tolerability: Although bictegravir-containing therapy is generally well tolerated, adverse reactions such as headache, diarrhoea and nausea must be considered when evaluating the overall benefit–risk profile. [@noauthor_hiv_nodate]
-
-- Variability in antiviral response: Differences in viral susceptibility, pre-existing resistance mutations and patient-specific factors may influence treatment outcomes, highlighting the importance of virological monitoring and appropriate treatment selection. [@noauthor_hiv_nodate]
+- Suboptimal adherence may lead to inadequate drug exposure and ongoing viral replication, potentially promoting the selection of resistant HIV variants. This may reduce bictegravir susceptibility and compromise long-term virological suppression. Therefore, maintaining treatment adherence is essential to preserve treatment efficacy (1, 3). 
 :::
 
 # 2. Data handling and management
@@ -593,11 +591,9 @@ The implementation of these measures will be documented and verified throughout 
 
 ## 3.1 Non-compartmental analysis (NCA)
 
-### 3.1.1 NCA Methodology
-
 **Aim:** Define and document the analytical settings, integration methods, and acceptance criteria used for the non-compartmental pharmacokinetic analysis (NCA) of Gajeevy.
 
-### NCA Settings & Acceptance Criteria
+### 3.1.1 NCA Settings & Acceptance Criteria
 
 | Parameter / Setting | Specification | Description / Target |
 |:-----------------------|:-----------------------|:-----------------------|
@@ -607,14 +603,14 @@ The implementation of these measures will be documented and verified throughout 
 | **Extrapolated** $\text{AUC}$ | $\le 20\%$ | Maximum allowable percentage of extrapolated area |
 | **SPAN Criterion** | $\ge 3$ | Minimum ratio of observation period to estimated half-life in terminal phase |
 
-### Methodology & Workflow
+### 3.1.2 Methodology & Workflow
 
 A non-compartmental analysis was performed on our cleaned dataset using `PKAnalix2024R1`. The area under the curve ($\text{AUC}$) was calculated by integrating consecutive segments of the concentration–time curve using the **linear-up/log-down method**. This method more accurately reflects underlying pharmacokinetic behavior and is widely adopted in regulatory guidance and clinical reports.
 
 - **Linear Trapezoidal Rule:** Applied to increasing or constant concentrations, as absorption phases are not straightforwardly described by a single exponent.
 - **Log-Linear Trapezoidal Rule:** Applied to decreasing positive concentrations to appropriately capture the exponential decline typical of the elimination phase.
 
-### Quality Control and Reliability Assessment
+### 3.1.3 Quality Control and Reliability Assessment
 
 The reliability of the NCA results was evaluated using three core acceptance criteria: an adjusted $R^2$ of at least $0.98$ for the terminal elimination regression, a maximum extrapolated $\text{AUC}$ fraction of $20\%$, and a SPAN criterion of at least three half-lives within the terminal phase.
 
@@ -622,7 +618,7 @@ The reliability of the NCA results was evaluated using three core acceptance cri
 - **Lambda-z (**$\lambda_z$) Estimation: Five data points were initially selected for the estimation of $\lambda_z$, while aiming to maximize $R^2$.
 - **Handling of Deviations:** When acceptance criteria were not met, data points were reassessed and alternative subsets were evaluated based on regression fit and pharmacokinetic plausibility. Estimates failing to meet the criteria were documented and interpreted with appropriate caution.
 
-### Individual Patient Terminal Phase Optimization Log
+### 3.1.4 Individual Patient Terminal Phase Optimization Log
 
 To ensure optimal estimation of the terminal elimination rate constant ($\lambda_z$), individual concentration–time profiles were evaluated. When standard criteria required deviation from the initial five-point selection, adjustments were documented as follows:
 
@@ -635,11 +631,9 @@ To ensure optimal estimation of the terminal elimination rate constant ($\lambda
 - **Patient 23:** Four data points were selected because the fifth point corresponded to $C_{\text{max}}$ and did not belong to the terminal elimination phase. The resulting adjusted $R^2$ was $0.973$, remaining slightly below the acceptance criterion of $0.98$.
 - **Patient 31:** Four data points were selected because including the fifth point resulted in an adjusted $R^2$ below the acceptance criterion of $0.98$.
 
-### 3.1.2 Individual Concentration–Time Profiles and Terminal Fits
+### 3.1.5 Individual Concentration–Time Profiles and Terminal Fits
 
-::: section-card
 The individual concentration–time profiles and estimated terminal elimination slopes ($\lambda_z$) for all 32 subjects evaluated in PKanalix 2024R1 are presented below. Each tab displays the terminal phase regression fits for four subjects.
-:::
 
 ::::::::::: panel-tabset
 ## Subjects 1–4
@@ -785,7 +779,6 @@ knitr::kable(
 
 ## 3.3 Covariate Analysis of PK Parameters
 
-::: section-card
 To investigate potential relationships between patient characteristics and pharmacokinetic (PK) parameters, an exploratory covariate analysis was performed using individual parameters estimated from non-compartmental analysis (NCA).
 
 Five continuous covariates (age, body weight, albumin, creatinine, and CRP) were assessed using Spearman's rank correlation, with correlation coefficients (ρ) and corresponding p-values reported. Scatterplots were also generated to visualize these relationships.
@@ -793,7 +786,6 @@ Five continuous covariates (age, body weight, albumin, creatinine, and CRP) were
 Categorical covariates, including sex and four genetic polymorphisms (ABCB1, ABCG2, CYP3A5, and UGT1A1), were explored using boxplots with individual observations. Dose groups were distinguished by color to help identify potential dose-related patterns.
 
 These analyses were considered exploratory and were intended to identify potential covariate relationships for further investigation.
-:::
 
 ```{r prepare-pk-covariates}
 #| include: false
@@ -1524,7 +1516,6 @@ knitr::kable(
 )
 ```
 
-
 The non-compartmental analysis of Gajeevy included 32 healthy volunteers receiving single oral doses of 10, 25, 50 or 100 mg. The results provide an initial understanding of the drug's absorption, exposure, distribution and elimination.
 
 **Absorption:** The median T~max~ is 2.00 h \[1.50–2.00\], indicating that Gajeevy generally reaches its highest plasma concentration approximately two hours after administration. This suggests a relatively early concentration peak, although the extent of oral bioavailability remains unknown.
@@ -1536,7 +1527,6 @@ The non-compartmental analysis of Gajeevy included 32 healthy volunteers receivi
 **Clearance and distribution:** The mean apparent oral clearance is 436.38 ± 109.48 mL/h, and the mean apparent volume of distribution is 11.89 ± 2.52 L. Since absolute oral bioavailability is unknown, these parameters cannot be interpreted as the true clearance or volume of distribution of Gajeevy.
 
 **Reliability of exposure estimates:** The mean AUC~0–inf~ (117.18 h·µg/mL) is higher than the mean AUC~0–tlast~ (92.16 h·µg/mL). This difference indicates that part of the total exposure was estimated beyond the last measured concentration. The reliability of this estimation should be checked using individual extrapolated AUC percentages.
-
 
 ### 3.4.1 Quantitative comparison: 50 mg group Gajeevy vs RCP
 
@@ -1609,8 +1599,6 @@ kable(dose_prop, digits = 2)
 The Vd/F for Gajeevy is 10727.32 mL, which falls within the reference range (10,900 - 11,200 mL). This supports the structural validity of our derived parameter. [@ekobena_population_2025]
 
 ## 4 Compartmental modelling
-
-### 4.1 CA Methodology
 
 **Aim**: Develop a preliminary compartmental model to describe the pharmacokinetics of Gajeevy following single-dose oral administration and compare alternative model structures.
 
@@ -1718,15 +1706,15 @@ combined_plot <- (p1 | p2)
 combined_plot
 ```
 
-### 4.2 Compartment selection and evaluation
+### 4.1 Compartment selection and evaluation
 
-### Initial model selection
+### 4.1.1 Initial model selection
 
-NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration–time profiles (@fig-Gajeevy-concentration-time-profiles), together with the NCA-derived parameters, were subsequently used to guide the selection of a preliminary compartmental model. The concentration–time profile supports the selection of an oral one-compartment model with first-order absorption and elimination. A characteristic oral absorption pattern is observed, with concentrations increasing exponentially from the first sampling point at 0.5 hours to a peak concentration at approximately 2 hours, followed by a gradual decline. This resembles a linear absorption process from the gastrointestinal tract into the systemic circulation, as no clear plateau is observed before (T\_{\max}), and (C\_{\max}). Subsequently AUC appears to increase approximately proportionally with dose, as shown in Figure 1.2. and table of NCA. These observations suggest dose-proportional pharmacokinetics and support the use of a one-compartment model with first-order absorption. As no data were available before the first sampling point, no absorption lag time was included, keeping the model as simple as possible without introducing an additional parameter unsupported by the available data. The post-peak decline appears approximately linear on the semi-logarithmic scale from 2 to 48 hours, which is consistent with first-order elimination. Finally, the absence of an obvious inflection point indicating a distinct distribution phase supports the use of a one-compartment model as a reasonable starting point.
+NCA provided an initial overview of the pharmacokinetic characteristics of Gajeevy following oral administration, without assuming a specific compartmental model. The observed concentration–time profiles (@fig-Gajeevy-concentration-time-profiles-per_dose), together with the NCA-derived parameters (Section 3.1), were subsequently used to guide the selection of a preliminary compartmental model. The concentration–time profile supports the selection of an oral one-compartment model with first-order absorption and elimination. A characteristic oral absorption pattern is observed, with concentrations increasing exponentially from the first sampling point at 0.5 hours to a peak concentration at approximately 2 hours, followed by a gradual decline (9). This resembles a linear absorption process from the gastrointestinal tract into the systemic circulation, as no clear plateau is observed before Tmax and Cmax (9). Subsequently AUC appears to increase approximately proportionally with dose (@fig-Gajeevy-concentration-time-profiles-per_dose; Section 3.1). These observations suggest dose-proportional pharmacokinetics and support the use of a one-compartment model with first-order absorption (9). As no data were available before the first sampling point, no absorption lag time was included, keeping the model as simple as possible without introducing an additional parameter unsupported by the available data. The post-peak decline appears approximately linear on the semi-logarithmic scale from 2 to 48 hours, which is consistent with first-order elimination. Finally, the absence of an obvious inflection point indicating a distinct distribution phase supports the use of a one-compartment model as a reasonable starting point. 
 
-### Comparing a two-compartment system
+### 4.1.2 Comparing a two-compartment system
 
-However, when we look at the concentration-time curves per dose (@fig-Gajeevy-concentration-time-profiles-per_dose), we see a slight bend (inflection point) between 4 and 8 hours after dosing in all dose groups. This could indicate a two-compartment system, in which the drug distributes into a second compartment. When we fit this model to our data, the two-compartment model yields a lower -2LL (-532.8 versus -442.7), and thus a better raw fit to the data (@tbl-ca-model-comparison). This is consistent with the fact that models with more parameters can always follow the data at least as closely, so -2LL rewards additional parameters, even when these mainly capture noise. Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC), however, also correct for model complexity by penalizing each additional parameter (AIC = -2LL + 2 × number of parameters; BIC = -2LL + ln(n) × number of parameters), so that a model only wins if it improves the fit by more than the penalty costs. Because each individual was fitted separately, the two-compartment model has 64 more parameters than the one-compartment model (161 versus 97), and this additional complexity is not justified by the gain in fit: both the AIC (-248.7 versus -210.8) and the BIC (-226.1 versus -175.6) are lower for the one-compartment model (@tbl-ca-model-comparison). The slight bend observed between 4 and 8 hours may reflect variability or noise in the data rather than a true distribution phase. The two-compartment model, being more flexible, can follow this deviation, but the data do not support a distinct second compartment.
+However, when we look at the concentration-time curves per dose, we see a slight bend (inflection point) between 4 and 8 hours after dosing in all dose groups. This could indicate a two-compartment system, in which the drug distributes into a second compartment (9). When we fit this model to our data, the two-compartment model yields a lower -2LL (-532.8 versus -442.7), and thus a better raw fit to the data (@tbl-ca-model-comparison) (9). This is consistent with the fact that models with more parameters can always follow the data at least as closely, so -2LL rewards additional parameters, even when these mainly capture noise. Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC), however, also correct for model complexity by penalizing each additional parameter (AIC = -2LL + 2 × number of parameters; BIC = -2LL + ln(n) × number of parameters), so that a model only wins if it improves the fit by more than the penalty costs (9). Because each individual was fitted separately, the two-compartment model has 64 more parameters than the one-compartment model (161 versus 97), and this additional complexity is not justified by the gain in fit: both the AIC (-248.7 versus -210.8) and the BIC (-226.1 versus -175.6) are lower for the one-compartment model (@tbl-ca-model-comparison). The slight bend observed between 4 and 8 hours may reflect variability or noise in the data rather than a true distribution phase. The two-compartment model, being more flexible, can follow this deviation, but the data do not support a distinct second compartment. The preliminary one-compartment model is therefore the simpler and more reliable choice, and it describes the data adequately. This was further supported by the observed-versus-predicted plot (@fig-observed-versus-predicted-plot), which showed no clear curvature or trend indicating systematic over- or underestimation of concentrations. A schematic representation of the model structure is shown in (@fig-sketch-model).  
 
 ```{r}
 #| label: fig-Gajeevy-concentration-time-profiles-per_dose
@@ -1798,7 +1786,7 @@ Observed versus individual predictions of concentration (µg/mL).
 Schematic representation of the one-compartment oral pharmacokinetic model with first-order absorption and elimination.
 :::
 
-### 4.3 Individual fits
+### 4.2 Individual fits
 
 The individual concentration–time profiles and their corresponding model fits for all 32 subjects evaluated in PKAnalix2024R1 are depicted in @fig-ca-individual-fits-1 through @fig-ca-individual-fits-8.
 
