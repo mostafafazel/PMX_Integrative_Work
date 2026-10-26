@@ -2077,3 +2077,114 @@ The comparison suggests that Gajeevy and bictegravir share broadly similar **abs
 
 - Gallant JE et al. *Antiviral Activity, Safety, and Pharmacokinetics of Bictegravir as 10-Day Monotherapy in HIV-1–Infected Adults.* J Acquir Immune Defic Syndr. 2017;75:61–66. [DOI: 10.1097/QAI.0000000000001306](https://doi.org/10.1097/QAI.0000000000001306).
 - Ekobena P et al. *Population pharmacokinetics of bictegravir in real-world people with HIV.* J Antimicrob Chemother. 2025;80:2782–2789. [DOI: 10.1093/jac/dkaf297](https://doi.org/10.1093/jac/dkaf297).
+
+Claude:
+
+## 3.5 Comparison with single-dose bictegravir data
+
+::: section-card
+**Aim:** place the Gajeevy NCA results in context by comparing them, dose by dose, with single-dose bictegravir data from the first-in-human study (GS-US-141-1218) [@10].
+
+**Data used:** Gajeevy values are the group medians [Q1–Q3] of the individual NCA results (n = 8 per dose). The bictegravir values are taken from the single-dose part of the published study (n = 6 per dose) and converted from ng to µg. The comparison is limited to the overlapping doses of 25, 50 and 100 mg, because the 10 mg dose was not studied for bictegravir.
+:::
+
+````{r}
+#| label: bic-cmp-prepare
+#| include: false
+
+shown  <- c("Cmax", "AUC0-inf", "Tmax", "T1/2")
+labels <- c("Cmax" = "Cmax (µg/mL)", "AUC0-inf" = "AUC0–inf (µg·h/mL)",
+            "Tmax" = "Tmax (h)", "T1/2" = "t½ (h)")
+
+# Gajeevy: median [Q1–Q3] per dose (nca_dose_stats is created in section 3.4)
+gaj_fmt <- nca_dose_stats |>
+  filter(Dose_mg %in% c(25, 50, 100), Parameter %in% shown) |>
+  transmute(Dose_mg, Parameter,
+            Gajeevy = sprintf("%.2f [%.2f–%.2f]", Median, Q1, Q3))
+
+# Bictegravir: GS-US-141-1218 (single dose); Cmax and AUC converted from ng to µg
+bic_fmt <- tribble(
+  ~Dose_mg, ~Parameter,  ~Bictegravir,
+  25,  "Cmax",     "1.62 (26.7)",
+  50,  "Cmax",     "3.97 (40.1)",
+  100, "Cmax",     "7.00 (36.1)",
+  25,  "AUC0-inf", "35.72 (21.3)",
+  50,  "AUC0-inf", "78.40 (29.7)",
+  100, "AUC0-inf", "163.03 (24.3)",
+  25,  "Tmax",     "2.00 (1.00–3.00)",
+  50,  "Tmax",     "3.00 (1.50–4.00)",
+  100, "Tmax",     "2.25 (1.50–3.00)",
+  25,  "T1/2",     "18.08 (16.63–19.64)",
+  50,  "T1/2",     "16.72 (15.77–17.11)",
+  100, "T1/2",     "18.90 (17.96–20.05)"
+)
+
+# One small table per dose
+cmp_table <- function(dose) {
+  gaj_fmt |>
+    filter(Dose_mg == dose) |>
+    left_join(bic_fmt, by = c("Dose_mg", "Parameter")) |>
+    mutate(Parameter = factor(Parameter, levels = shown)) |>
+    arrange(Parameter) |>
+    transmute(Parameter = unname(labels[as.character(Parameter)]),
+              `Gajeevy, median [Q1–Q3]` = Gajeevy,
+              `Bictegravir` = Bictegravir) |>
+    kable(align = "lcc")
+}
+
+# Values for the text
+d <- c(25, 50, 100)
+g <- function(p) sapply(d, function(x) get_dose_median(p, x))
+rng <- function(x, k = 1) { r <- range(x); sprintf(paste0("%.", k, "f–%.", k, "f"), r[1], r[2]) }
+cmax_fold      <- g("Cmax")     / c(1.6183, 3.9650, 6.9983)
+auc_fold       <- g("AUC0-inf") / c(35.7182, 78.3995, 163.0282)
+auc_per_mg_gaj <- g("AUC0-inf") / d
+auc_per_mg_bic <- c(35.7182, 78.3995, 163.0282) / d
+````
+
+### 3.5.1 Comparison per dose level
+
+The tables below show the Gajeevy NCA parameters next to the bictegravir values for each overlapping dose.
+
+::: panel-tabset
+## 25 mg
+
+````{r}
+#| label: tbl-bic-cmp-25
+#| echo: false
+#| tbl-cap: "25 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@10]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
+cmp_table(25)
+````
+
+## 50 mg
+
+````{r}
+#| label: tbl-bic-cmp-50
+#| echo: false
+#| tbl-cap: "50 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@10]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
+cmp_table(50)
+````
+
+## 100 mg
+
+````{r}
+#| label: tbl-bic-cmp-100
+#| echo: false
+#| tbl-cap: "100 mg: Gajeevy (n = 8) versus single-dose bictegravir (GS-US-141-1218, n = 6) [@10]. Bictegravir Cmax and AUC0–inf: mean (%CV); Tmax and t½: median (Q1–Q3)."
+cmp_table(100)
+````
+:::
+
+### 3.5.2 Interpretation
+
+::: section-card
+Comparison with single-dose bictegravir data from the first-in-human study [@10] (@tbl-bic-cmp-25, @tbl-bic-cmp-50 and @tbl-bic-cmp-100) showed a similar absorption and elimination profile for Gajeevy at 25–100 mg: median Tmax was `r rng(g("Tmax"), 2)` h versus 2.00–3.00 h, and terminal half-life `r rng(g("T1/2"))` h versus 16.7–18.9 h. Gajeevy exposure was higher, with Cmax `r rng(cmax_fold)`-fold and AUC0–inf `r rng(auc_fold)`-fold that of bictegravir, which with a similar half-life suggests a lower apparent clearance. Dose-normalised AUC0–inf remained relatively stable for both drugs (`r rng(auc_per_mg_gaj, 2)` versus `r rng(auc_per_mg_bic, 2)` µg·h/mL per mg), suggesting approximate dose proportionality over this range.
+:::
+
+### 3.5.3 Conclusion
+
+::: section-card
+Overall, these comparisons support the pharmacokinetic plausibility of the NCA findings but do not constitute formal validation, given differences in study populations, sample sizes and summary statistics (medians for Gajeevy versus means for bictegravir Cmax and AUC0–inf).
+:::
+````
+````
